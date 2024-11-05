@@ -35,11 +35,23 @@ class ConsistentHashMap<K, V>(private val hashFunction: HashFunction<K>) {
         if (treeMap.isEmpty()) {
             return null
         }
-        val index = hashFunction.hash(key)
-        if (treeMap.containsKey(index)) {
-            return treeMap[index]
+        val keyHash = hashFunction.hash(key)
+        if (treeMap.containsKey(keyHash)) {
+            return treeMap[keyHash]
         }
-        return if (treeMap.ceilingEntry(index) != null) treeMap.ceilingEntry(index).value else {
+        val ceilingEntry = treeMap.ceilingEntry(keyHash)
+        return if (ceilingEntry != null) ceilingEntry.value else {
+            treeMap.ceilingEntry(BigInteger.ZERO).value
+        }
+    }
+
+    fun nextAfter(key: K): V? {
+        if (treeMap.isEmpty()) {
+            return null
+        }
+        val keyHash = hashFunction.hash(key)
+        val higherEntry = treeMap.higherEntry(keyHash)
+        return if (higherEntry != null) higherEntry.value else {
             treeMap.ceilingEntry(BigInteger.ZERO).value
         }
     }
