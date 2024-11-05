@@ -14,17 +14,6 @@ import kotlin.test.assertNull
 
 class ConsistentHashMapTest {
 
-    companion object {
-        @JvmStatic
-        fun keys() = listOf(
-            Arguments.of(BigInteger.ZERO, "value1"),
-            Arguments.of(BigInteger.valueOf(4), "value2"),
-            Arguments.of(BigInteger.valueOf(5), "value2"),
-            Arguments.of(BigInteger.valueOf(6), "value3"),
-            Arguments.of(BigInteger.valueOf(8), "value1"),
-        )
-    }
-
     @ParameterizedTest
     @MethodSource("keys")
     fun `should return closest values by provided keys`(mockedKeyHash: BigInteger, expectedValue: String) {
@@ -42,6 +31,17 @@ class ConsistentHashMapTest {
 
         // then
         assertEquals(actualValue, expectedValue)
+    }
+
+    companion object {
+        @JvmStatic
+        fun keys() = listOf(
+            Arguments.of(BigInteger.ZERO, "value1"),
+            Arguments.of(BigInteger.valueOf(4), "value2"),
+            Arguments.of(BigInteger.valueOf(5), "value2"),
+            Arguments.of(BigInteger.valueOf(6), "value3"),
+            Arguments.of(BigInteger.valueOf(8), "value1"),
+        )
     }
 
     private fun prepareMap(mockedHashFunction: HashFunction<String>): ConsistentHashMap<String, String> {
