@@ -140,6 +140,23 @@ class ConsistentHashMapTest {
         assertNull(actual)
     }
 
+    @Test
+    fun `should return valid internal map size`() {
+        // given
+        val mockedHashFunction = mockk<HashFunction<String>>()
+        every { mockedHashFunction.hash("node1") } returns BigInteger.valueOf(1)
+        every { mockedHashFunction.hash("node2") } returns BigInteger.valueOf(5)
+        every { mockedHashFunction.hash("node3") } returns BigInteger.valueOf(7)
+
+        // when
+        val filledNap = prepareMap(mockedHashFunction)
+        val emptyMap = ConsistentHashMap<String, String>(mockedHashFunction)
+
+        // then
+        assertEquals(0, emptyMap.size)
+        assertEquals(3, filledNap.size)
+    }
+
     companion object {
         @JvmStatic
         fun keys() = listOf(

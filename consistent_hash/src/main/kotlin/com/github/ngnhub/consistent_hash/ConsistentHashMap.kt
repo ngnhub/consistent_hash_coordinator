@@ -11,6 +11,8 @@ class ConsistentHashMap<K, V>(private val hashFunction: HashFunction<K>) {
 
     private val treeMap: ConcurrentSkipListMap<BigInteger, V?> = ConcurrentSkipListMap()
 
+    val size get() = treeMap.size
+
     /**
      * The method does not resolve collisions.
      * The frequency of collisions depends on the chosen HashFunction hashing algorithm.
