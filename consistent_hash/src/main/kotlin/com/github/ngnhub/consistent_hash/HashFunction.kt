@@ -1,4 +1,4 @@
-package com.github.ngnhub.com.github.ngnhub.consistent_hash
+package com.github.ngnhub.consistent_hash
 
 import java.math.BigInteger
 

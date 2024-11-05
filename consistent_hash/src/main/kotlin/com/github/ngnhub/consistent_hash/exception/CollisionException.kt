@@ -1,3 +1,3 @@
-package com.github.ngnhub.com.github.ngnhub.consistent_hash.exception
+package com.github.ngnhub.consistent_hash.exception
 
 class CollisionException(message: String) : Throwable(message)

@@ -1,6 +1,6 @@
-package com.github.ngnhub.com.github.ngnhub.consistent_hash.impl
+package com.github.ngnhub.consistent_hash.impl
 
-import com.github.ngnhub.com.github.ngnhub.consistent_hash.HashFunction
+import com.github.ngnhub.consistent_hash.HashFunction
 import com.google.common.hash.Hashing
 import java.math.BigInteger
 import java.nio.charset.StandardCharsets

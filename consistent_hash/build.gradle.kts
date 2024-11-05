@@ -1,0 +1,41 @@
+plugins {
+    kotlin("jvm") version "2.0.0"
+}
+
+group = "com.github.ngnhub"
+version = "1.0-SNAPSHOT"
+
+// versions
+val guavaVersion = "33.3.1-jre"
+val mockkVersion = "1.13.13"
+val paramTestVersion = "5.11.3"
+val slf4jVersion = "2.0.16"
+val loggerVersion = "7.0.0"
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation("com.google.guava:guava:$guavaVersion")
+
+    // logging
+    implementation("org.slf4j:slf4j-api:$slf4jVersion")
+    implementation("io.github.oshai:kotlin-logging-jvm:$loggerVersion")
+
+    testImplementation("io.mockk:mockk:${mockkVersion}")
+    testImplementation("org.junit.jupiter:junit-jupiter-params:$paramTestVersion")
+    testImplementation(kotlin("test"))
+}
+
+tasks.withType<Test> {
+    useJUnitPlatform()
+
+    testLogging {
+        events("passed", "failed")
+    }
+}
+
+kotlin {
+    jvmToolchain(21)
+}

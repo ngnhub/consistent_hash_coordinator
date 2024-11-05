@@ -1,6 +1,6 @@
-package com.github.ngnhub.com.github.ngnhub.consistent_hash
+package com.github.ngnhub.consistent_hash
 
-import com.github.ngnhub.com.github.ngnhub.consistent_hash.exception.CollisionException
+import com.github.ngnhub.consistent_hash.exception.CollisionException
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.math.BigInteger
 import java.util.concurrent.ConcurrentSkipListMap

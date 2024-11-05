@@ -1,8 +1,6 @@
 package com.github.ngnhub.consistent_hash
 
-import com.github.ngnhub.com.github.ngnhub.consistent_hash.ConsistentHashMap
-import com.github.ngnhub.com.github.ngnhub.consistent_hash.HashFunction
-import com.github.ngnhub.com.github.ngnhub.consistent_hash.exception.CollisionException
+import com.github.ngnhub.consistent_hash.exception.CollisionException
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Test
