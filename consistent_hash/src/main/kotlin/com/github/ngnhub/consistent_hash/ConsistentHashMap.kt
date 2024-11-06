@@ -22,12 +22,12 @@ class ConsistentHashMap<K, V>(private val hashFunction: HashFunction<K>) {
      * @throws CollisionException when collision has occurred
      */
     operator fun set(key: K, value: V) {
-        val index = hash(key)
-        if (map.containsKey(index)) {
+        val keyHash = hash(key)
+        if (map.containsKey(keyHash)) {
             throw CollisionException("Collision has occurred for key $key. The key must be modified")
         }
-        logger.debug { "Put '$value' at index '$index'" }
-        map[index] = value
+        logger.debug { "Put '$value' at index '$keyHash'" }
+        map[keyHash] = value
     }
 
     /**
@@ -60,7 +60,6 @@ class ConsistentHashMap<K, V>(private val hashFunction: HashFunction<K>) {
     }
 
     private fun hash(key: K): BigInteger {
-        val keyHash = hashFunction.hash(key)
-        return keyHash
+        return hashFunction.hash(key)
     }
 }
