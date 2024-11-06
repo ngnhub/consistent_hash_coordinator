@@ -1,12 +1,13 @@
 package com.github.ngnhub.partition_coordinator
 
+import com.github.ngnhub.consistent_hash.model.Hashed
 import java.math.BigInteger
 
-interface Server<K> {
+interface Server<K> : Hashed {
+
+    override val hash: BigInteger
 
     val key: String
-
-    val hash: BigInteger
 
     val virtualNodesKeys: Set<K>
 

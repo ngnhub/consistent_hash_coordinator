@@ -1,13 +1,14 @@
 package com.github.ngnhub.consistent_hash
 
 import com.github.ngnhub.consistent_hash.exception.CollisionException
+import com.github.ngnhub.consistent_hash.model.Hashed
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.math.BigInteger
 import java.util.concurrent.ConcurrentSkipListMap
 
 private val logger = KotlinLogging.logger {}
 
-class ConsistentHashMap<K, V>(private val hashFunction: HashFunction<K>) {
+class ConsistentHashMap<K, V : Hashed>(private val hashFunction: HashFunction<K>) {
 
     private val map: ConcurrentSkipListMap<BigInteger, V?> = ConcurrentSkipListMap() // todo: delegate?
 
