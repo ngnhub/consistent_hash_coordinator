@@ -170,7 +170,7 @@ class ConsistentHashMapTest {
         assertEquals(value, consistentHashMap[key])
 
         // when
-        consistentHashMap.remove(key)
+        consistentHashMap - key
 
         // then
         assertEquals(0, consistentHashMap.size)

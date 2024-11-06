@@ -58,7 +58,7 @@ class ConsistentHashMap<K, V>(private val hashFunction: HashFunction<K>) {
         }
     }
 
-    fun remove(key: K): V? {
+    operator fun minus(key: K): V? {
         val keyHash = hash(key)
         return map.remove(keyHash)
     }
