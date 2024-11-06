@@ -41,10 +41,8 @@ class ConsistentHashMap<K, V>(private val hashFunction: HashFunction<K>) {
         if (map.containsKey(keyHash)) {
             return map[keyHash]
         }
-        val ceilingEntry = map.ceilingEntry(keyHash)
-        return if (ceilingEntry != null) ceilingEntry.value else {
-            map.ceilingEntry(BigInteger.ZERO).value
-        }
+        val ceilingEntry = map.ceilingEntry(keyHash) ?: map.firstEntry()
+        return ceilingEntry.value
     }
 
     fun nextAfter(key: K): V? {
@@ -52,10 +50,8 @@ class ConsistentHashMap<K, V>(private val hashFunction: HashFunction<K>) {
             return null
         }
         val keyHash = hash(key)
-        val higherEntry = map.higherEntry(keyHash)
-        return if (higherEntry != null) higherEntry.value else {
-            map.ceilingEntry(BigInteger.ZERO).value
-        }
+        val higherEntry = map.higherEntry(keyHash) ?: map.firstEntry()
+        return if (higherEntry!!.key == keyHash) null else higherEntry.value
     }
 
     operator fun minus(key: K): V? {

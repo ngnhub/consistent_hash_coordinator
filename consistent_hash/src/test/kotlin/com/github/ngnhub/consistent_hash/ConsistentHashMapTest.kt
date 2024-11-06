@@ -141,6 +141,21 @@ class ConsistentHashMapTest {
     }
 
     @Test
+    fun `next after should return null if it is a single value in a map`() {
+        // given
+        val mockedHashFunction = mockk<HashFunction<String>>()
+        every { mockedHashFunction.hash("key") } returns BigInteger.valueOf(1)
+        val consistentHashMap = ConsistentHashMap<String, String>(mockedHashFunction)
+        consistentHashMap["key"] = "value"
+
+        // when
+        val actual = consistentHashMap.nextAfter("key")
+
+        // then
+        assertNull(actual)
+    }
+
+    @Test
     fun `should return valid internal map size`() {
         // given
         val mockedHashFunction = mockk<HashFunction<String>>()
