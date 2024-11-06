@@ -1,9 +1,28 @@
 plugins {
     kotlin("jvm") version "2.0.0"
+    `maven-publish`
 }
 
+val artifactName = "consistent_hash"
+val artifactVersion = "1.0-SNAPSHOT"
+
 group = "com.github.ngnhub"
-version = "1.0-SNAPSHOT"
+version = artifactVersion
+
+publishing {
+    publications {
+        create<MavenPublication>("mavenJava") {
+            from(components["java"])
+
+            groupId = "$group"
+            artifactId = artifactName
+            version = artifactVersion
+        }
+    }
+    repositories {
+        mavenLocal()
+    }
+}
 
 // versions
 val guavaVersion = "33.3.1-jre"
