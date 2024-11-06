@@ -157,6 +157,26 @@ class ConsistentHashMapTest {
         assertEquals(3, filledNap.size)
     }
 
+    @Test
+    fun `should remove value`() {
+        // given
+        val mockedHashFunction = mockk<HashFunction<String>>()
+        val key = "key"
+        val value = "value"
+        every { mockedHashFunction.hash(key) } returns BigInteger.valueOf(1)
+        val consistentHashMap = ConsistentHashMap<String, String>(mockedHashFunction)
+        consistentHashMap[key] = value
+        assertEquals(1, consistentHashMap.size)
+        assertEquals(value, consistentHashMap[key])
+
+        // when
+        consistentHashMap.remove(key)
+
+        // then
+        assertEquals(0, consistentHashMap.size)
+        assertNull(consistentHashMap[key])
+    }
+
     companion object {
         @JvmStatic
         fun keys() = listOf(
