@@ -5,7 +5,7 @@ import com.google.common.hash.Hashing
 import java.math.BigInteger
 import java.nio.charset.StandardCharsets
 
-class MmrHashFunction : HashFunction<String> {
+class MurmurHashFunction : HashFunction<String> {
 
     override fun hash(value: String): BigInteger {
         val murmur3128 = Hashing.murmur3_128()
