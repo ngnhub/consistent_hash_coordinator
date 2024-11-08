@@ -10,8 +10,13 @@ repositories {
     mavenCentral()
 }
 
+// versions
+val consistentHashVersion = "1.0-SNAPSHOT"
+val coroutinesVersion = "1.9.0"
+
 dependencies {
-    implementation("com.github.ngnhub:consistent_hash:1.0-SNAPSHOT")
+    implementation("com.github.ngnhub:consistent_hash:$consistentHashVersion")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
     testImplementation(kotlin("test"))
 }
 
