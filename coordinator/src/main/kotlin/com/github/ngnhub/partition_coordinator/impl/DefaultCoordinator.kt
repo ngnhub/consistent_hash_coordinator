@@ -4,29 +4,16 @@ import com.github.ngnhub.consistent_hash.ConsistentHashMap
 import com.github.ngnhub.consistent_hash.impl.MurmurHashFunction
 import com.github.ngnhub.partition_coordinator.Coordinator
 import com.github.ngnhub.partition_coordinator.Server
-import com.github.ngnhub.partition_coordinator.ServerBroker
 import com.github.ngnhub.partition_coordinator.StorageProvider
 import com.github.ngnhub.partition_coordinator.exception.NoAvailableSever
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.channels.consumeEach
-import kotlinx.coroutines.launch
 
 class DefaultCoordinator(
     private val consistentHashMap: ConsistentHashMap<String, Server<String>> = ConsistentHashMap(MurmurHashFunction()), // todo: IP
-    private val storageProvider: StorageProvider<String>,
-    private val serverBroker: ServerBroker<String>,
-    private val scope: CoroutineScope = CoroutineScope(Dispatchers.Default)
+    private val storageProvider: StorageProvider<String>
 ) : Coordinator<String> {
 
-    init {
-        scope.launch { onStart() }
-    }
-
-    private suspend fun onStart() {
-        serverBroker.subscribeOnNewServers().consumeEach { addServer(it) }
-    }
+    override val serversCount: Int
+        get() = consistentHashMap.size
 
     override fun addServer(server: Server<String>) {
         consistentHashMap[server.key] = server
@@ -53,13 +40,11 @@ class DefaultCoordinator(
         if (server.health()) {
             return server
         }
-        consistentHashMap - server.key
-        serverBroker.sendDownServer(server)
+        removeServer(server.key)
         return findFirstAvailableWithUnhealthyRemoval(server.key)
     }
 
-    fun tearDown() {
-        serverBroker.close()
-        scope.cancel()
+    override fun removeServer(key: String): Server<String>? {
+        return consistentHashMap - key
     }
 }

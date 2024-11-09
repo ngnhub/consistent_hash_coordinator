@@ -16,7 +16,7 @@ class ServerBroker<K>(
         newServersChannel.send(newServersChannel.receive())
     }
 
-    fun subscribeOnNewServers(): ReceiveChannel<Server<K>> = newServersChannel
+    fun subscribeOnNewServers(): Channel<Server<K>> = newServersChannel
 
     fun sendDownServer(server: Server<K>) = scope.launch {
         newServersChannel.send(downServiceChannel.receive())
