@@ -1,8 +1,12 @@
 package com.github.ngnhub.partition_coordinator.impl
 
 import com.github.ngnhub.partition_coordinator.Coordinator
+import com.github.ngnhub.partition_coordinator.Server
 import com.github.ngnhub.partition_coordinator.ServerBroker
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 
 class AsyncCoordinator<K>(
     private val delegated: Coordinator<K>,
@@ -18,11 +22,12 @@ class AsyncCoordinator<K>(
         }
     }
 
-    fun removeServerAndSendSignal(key: K): Job? {
+    override fun removeServer(key: K): Server<K>? {
         val removeServer = delegated.removeServer(key)
-        return removeServer?.let {
+        removeServer?.let {
             scope.launch { serverBroker.sendDownServer(it) }
         }
+        return removeServer
     }
 
     fun close() = scope.cancel()

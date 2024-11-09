@@ -6,6 +6,7 @@ import com.github.ngnhub.partition_coordinator.StorageProvider
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.*
@@ -63,14 +64,11 @@ class AsyncCoordinatorTest {
         sendThreeMessages(channel)
         channel.close()
         consumeJob.join()
-        val sendingJob1 = coordinator.removeServerAndSendSignal("server1")
-        val sendingJob2 = coordinator.removeServerAndSendSignal("server2")
+        coordinator.removeServer("server1")
+        coordinator.removeServer("server2")
+        delay(100L)
 
         // verify
-        assertNotNull(sendingJob1)
-        assertNotNull(sendingJob2)
-        sendingJob1!!.join()
-        sendingJob2!!.join()
         verify(broker, times(2)).sendDownServer(anyOrNull())
         assertEquals(1, coordinator.serversCount)
     }
@@ -87,7 +85,8 @@ class AsyncCoordinatorTest {
         sendThreeMessages(channel)
         channel.close()
         consumeJob.join()
-        val sendingJob = coordinator.removeServerAndSendSignal("server4")
+        val sendingJob = coordinator.removeServer("server4")
+        delay(100L)
 
         // verify
         assertNull(sendingJob)
