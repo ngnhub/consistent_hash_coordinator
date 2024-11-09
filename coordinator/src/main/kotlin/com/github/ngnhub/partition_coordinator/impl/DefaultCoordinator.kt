@@ -17,8 +17,11 @@ class DefaultCoordinator(
 
     override fun addServer(server: Server<String>) {
         consistentHashMap[server.key] = server
-        val nextServer = findFirstAvailableWithUnhealthyRemoval(server.key)
-        storageProvider.reDistribute(nextServer, server)
+        consistentHashMap.nextAfter(server.key)
+            ?.let { nextServer ->
+                findFirstAvailableWithUnhealthyRemoval(nextServer.key)
+                    ?.let { nextAvailableServer -> storageProvider.reDistribute(nextAvailableServer, server) }
+            }
     }
 
     override fun addVirtualNodes(vararg virtualNodes: String, sourceNode: String) {
@@ -26,17 +29,17 @@ class DefaultCoordinator(
     }
 
     override fun set(key: String, value: Any) {
-        val server = findFirstAvailableWithUnhealthyRemoval(key)
+        val server = findFirstAvailableWithUnhealthyRemoval(key) ?: throw NoAvailableSever()
         storageProvider.insert(key, server)
     }
 
     override fun get(key: String): Any? {
-        val server = findFirstAvailableWithUnhealthyRemoval(key)
+        val server = findFirstAvailableWithUnhealthyRemoval(key) ?: throw NoAvailableSever()
         return storageProvider.read(key, server)
     }
 
-    private fun findFirstAvailableWithUnhealthyRemoval(key: String): Server<String> {
-        val server = consistentHashMap[key] ?: throw NoAvailableSever()
+    private fun findFirstAvailableWithUnhealthyRemoval(key: String): Server<String>? {
+        val server = consistentHashMap[key] ?: return null
         if (server.health()) {
             return server
         }
