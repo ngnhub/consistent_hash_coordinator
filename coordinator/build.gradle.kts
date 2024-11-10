@@ -35,7 +35,7 @@ val coroutinesVersion = "1.9.0"
 val mockVersion = "5.4.0"
 
 dependencies {
-    implementation("com.github.ngnhub:consistent_hash:$consistentHashVersion")
+    api("com.github.ngnhub:consistent_hash:$consistentHashVersion")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
 
     testImplementation(kotlin("test"))

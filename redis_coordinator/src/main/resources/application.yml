@@ -1,0 +1,7 @@
+spring:
+  application:
+    name: redis_coordinator
+  data:
+    redis:
+      repositories:
+        enabled: false
