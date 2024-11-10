@@ -2,7 +2,6 @@ package com.github.ngnhub.partition_coordinator.impl
 
 import com.github.ngnhub.partition_coordinator.Server
 import com.github.ngnhub.partition_coordinator.ServerBroker
-import com.github.ngnhub.partition_coordinator.StorageProvider
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
@@ -24,15 +23,12 @@ class AsyncCoordinatorTest {
     @Mock
     private lateinit var broker: ServerBroker<String>
 
-    @Mock
-    private lateinit var storage: StorageProvider<String>
-
     private lateinit var delegated: DefaultCoordinator
 
     @BeforeEach
     fun setUp() {
         MockitoAnnotations.openMocks(this)
-        delegated = DefaultCoordinator(storageProvider = storage)
+        delegated = DefaultCoordinator()
     }
 
     @Test

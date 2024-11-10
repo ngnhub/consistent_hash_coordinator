@@ -2,7 +2,6 @@ package com.github.ngnhub.partition_coordinator.impl
 
 import com.github.ngnhub.consistent_hash.ConsistentHashMap
 import com.github.ngnhub.partition_coordinator.Server
-import com.github.ngnhub.partition_coordinator.StorageProvider
 import com.github.ngnhub.partition_coordinator.exception.NoAvailableSever
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -16,9 +15,6 @@ import kotlin.test.assertEquals
 class DefaultCoordinatorTest {
 
     @Mock
-    lateinit var storageProvider: StorageProvider<String>
-
-    @Mock
     lateinit var consistentHashMap: ConsistentHashMap<String, Server<String>>
 
     private lateinit var coordinator: DefaultCoordinator
@@ -26,7 +22,7 @@ class DefaultCoordinatorTest {
     @BeforeEach
     fun setUp() {
         MockitoAnnotations.openMocks(this)
-        coordinator = DefaultCoordinator(consistentHashMap, storageProvider)
+        coordinator = DefaultCoordinator(consistentHashMap)
     }
 
     @Test
@@ -63,9 +59,9 @@ class DefaultCoordinatorTest {
         verify(consistentHashMap)[key1] = server1
         verify(consistentHashMap)[key2] = server2
         verify(consistentHashMap)[key3] = server3
-        verify(storageProvider).reDistribute(server2, server1)
-        verify(storageProvider).reDistribute(server3, server2)
-        verify(storageProvider).reDistribute(server1, server3)
+        verify(server1).reDistribute(server2)
+        verify(server2).reDistribute(server3)
+        verify(server3).reDistribute(server1)
     }
 
     @Test
@@ -83,7 +79,7 @@ class DefaultCoordinatorTest {
 
         // then
         verify(consistentHashMap)[key1] = server1
-        verify(storageProvider, never()).reDistribute(anyOrNull(), anyOrNull())
+        verify(server1, never()).reDistribute(anyOrNull())
     }
 
     @Test
@@ -108,7 +104,7 @@ class DefaultCoordinatorTest {
         // then
         verify(consistentHashMap)[key1] = server1
         verify(consistentHashMap) - key2
-        verify(storageProvider, never()).reDistribute(anyOrNull(), anyOrNull())
+        verify(server1, never()).reDistribute(anyOrNull())
     }
 
     @Test
@@ -125,7 +121,7 @@ class DefaultCoordinatorTest {
         coordinator[key] = "value"
 
         // then
-        verify(storageProvider).insert(key, server1)
+        verify(server1).insert(key, "value")
     }
 
     @Test
@@ -136,9 +132,6 @@ class DefaultCoordinatorTest {
 
         // when
         assertThrows<NoAvailableSever> { coordinator[key] = "value" }
-
-        // then
-        verify(storageProvider, never()).insert(anyOrNull(), anyOrNull())
     }
 
     @Test
@@ -151,14 +144,14 @@ class DefaultCoordinatorTest {
         }
         val expected = "values"
         whenever(consistentHashMap[key]).thenReturn(server1)
-        whenever(storageProvider.read(key, server1)).thenReturn(expected)
+        whenever(server1.read(key)).thenReturn(expected)
 
         // when
         val actual = coordinator[key]
 
         // then
         assertEquals(expected, actual)
-        verify(storageProvider).read(key, server1)
+        verify(server1).read(key)
     }
 
     @Test
@@ -169,9 +162,6 @@ class DefaultCoordinatorTest {
 
         // when
         assertThrows<NoAvailableSever> { coordinator[key] }
-
-        // then
-        verify(storageProvider, never()).read(anyOrNull(), anyOrNull())
     }
 
     @Test

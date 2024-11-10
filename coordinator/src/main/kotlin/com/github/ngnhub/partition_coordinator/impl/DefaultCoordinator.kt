@@ -4,12 +4,10 @@ import com.github.ngnhub.consistent_hash.ConsistentHashMap
 import com.github.ngnhub.consistent_hash.impl.MurmurHashFunction
 import com.github.ngnhub.partition_coordinator.Coordinator
 import com.github.ngnhub.partition_coordinator.Server
-import com.github.ngnhub.partition_coordinator.StorageProvider
 import com.github.ngnhub.partition_coordinator.exception.NoAvailableSever
 
 class DefaultCoordinator(
-    private val consistentHashMap: ConsistentHashMap<String, Server<String>> = ConsistentHashMap(MurmurHashFunction()), // todo: IP
-    private val storageProvider: StorageProvider<String>
+    private val consistentHashMap: ConsistentHashMap<String, Server<String>> = ConsistentHashMap(MurmurHashFunction()) // todo: IP
 ) : Coordinator<String> {
 
     override val serversCount: Int
@@ -20,7 +18,7 @@ class DefaultCoordinator(
         consistentHashMap.nextAfter(server.key)
             ?.let { nextServer ->
                 findFirstAvailableWithUnhealthyRemoval(nextServer.key)
-                    ?.let { nextAvailableServer -> storageProvider.reDistribute(nextAvailableServer, server) }
+                    ?.let { nextAvailableServer -> server.reDistribute(nextAvailableServer) }
             }
     }
 
@@ -30,12 +28,12 @@ class DefaultCoordinator(
 
     override fun set(key: String, value: Any) {
         val server = findFirstAvailableWithUnhealthyRemoval(key) ?: throw NoAvailableSever()
-        storageProvider.insert(key, server)
+        server.insert(key, value)
     }
 
     override fun get(key: String): Any? {
         val server = findFirstAvailableWithUnhealthyRemoval(key) ?: throw NoAvailableSever()
-        return storageProvider.read(key, server)
+        return server.read(key)
     }
 
     private fun findFirstAvailableWithUnhealthyRemoval(key: String): Server<String>? {

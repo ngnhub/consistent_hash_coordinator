@@ -7,4 +7,10 @@ interface Server<K> {
     val virtualNodesKeys: Set<K>
 
     fun health(): Boolean
+
+    fun read(key: String): Any?
+
+    fun insert(key: String, value: Any?)
+
+    fun reDistribute(from: Server<K>)
 }
