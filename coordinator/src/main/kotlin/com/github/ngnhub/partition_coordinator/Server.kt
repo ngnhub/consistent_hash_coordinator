@@ -8,7 +8,7 @@ import java.net.Socket
 private const val CONNECTION_TIME_OUT = 3000
 private val logger = KotlinLogging.logger {}
 
-interface Server<K> {
+interface Server {
 
     val host: String
 
@@ -17,7 +17,7 @@ interface Server<K> {
     val key: String // todo shouldn't be here. it is a ConsistentHash's responsibility
         get() = host + port
 
-    val virtualNodesKeys: Set<K>
+    val virtualNodesKeys: Set<String>
 
     fun health(): Boolean {
         Socket().use { socket ->
@@ -31,9 +31,9 @@ interface Server<K> {
         }
     }
 
-    fun read(key: String): Any?
+    fun read(key: String): Any? // todo : extra responsibility
 
-    fun insert(key: String, value: Any?)
+    fun insert(key: String, value: Any?) // todo : extra responsibility
 
-    fun reDistribute(from: Server<K>)
+    fun reDistribute(from: Server)
 }

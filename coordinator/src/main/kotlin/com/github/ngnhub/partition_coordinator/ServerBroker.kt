@@ -6,23 +6,23 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.launch
 
-class ServerBroker<K>(
+class ServerBroker(
     private val scope: CoroutineScope,
-    private val newServersChannel: Channel<Server<K>>,
-    private val downServiceChannel: Channel<Server<K>>
+    private val newServersChannel: Channel<Server>,
+    private val downServiceChannel: Channel<Server>
 ) {
 
-    fun sendNewServer(server: Server<K>) = scope.launch {
+    fun sendNewServer(server: Server) = scope.launch {
         newServersChannel.send(newServersChannel.receive())
     }
 
-    fun subscribeOnNewServers(): Channel<Server<K>> = newServersChannel
+    fun subscribeOnNewServers(): Channel<Server> = newServersChannel
 
-    fun sendDownServer(server: Server<K>) = scope.launch {
+    fun sendDownServer(server: Server) = scope.launch {
         newServersChannel.send(downServiceChannel.receive())
     }
 
-    fun subscribeOnDownServer(): ReceiveChannel<Server<K>> = downServiceChannel
+    fun subscribeOnDownServer(): ReceiveChannel<Server> = downServiceChannel
 
     fun close() {
         newServersChannel.close()

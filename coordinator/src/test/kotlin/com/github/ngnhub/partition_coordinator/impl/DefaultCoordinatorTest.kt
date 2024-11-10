@@ -15,7 +15,7 @@ import kotlin.test.assertEquals
 class DefaultCoordinatorTest {
 
     @Mock
-    lateinit var consistentHashMap: ConsistentHashMap<String, Server<String>>
+    lateinit var consistentHashMap: ConsistentHashMap<String, Server>
 
     private lateinit var coordinator: DefaultCoordinator
 
@@ -29,17 +29,17 @@ class DefaultCoordinatorTest {
     fun `should add a server and redistribute values`() {
         // given
         val key1 = "server1"
-        val server1 = mock<Server<String>> {
+        val server1 = mock<Server> {
             on(it.key) doReturn key1
             on(it.health()) doReturn true
         }
         val key2 = "server2"
-        val server2 = mock<Server<String>> {
+        val server2 = mock<Server> {
             on(it.key) doReturn key2
             on(it.health()) doReturn true
         }
         val key3 = "server3"
-        val server3 = mock<Server<String>> {
+        val server3 = mock<Server> {
             on(it.key) doReturn key3
             on(it.health()) doReturn true
         }
@@ -68,7 +68,7 @@ class DefaultCoordinatorTest {
     fun `should not redistribute if a single server`() {
         // given
         val key1 = "server1"
-        val server1 = mock<Server<String>> {
+        val server1 = mock<Server> {
             on(it.key) doReturn key1
             on(it.health()) doReturn true
         }
@@ -86,12 +86,12 @@ class DefaultCoordinatorTest {
     fun `should not redistribute if server is not healthy`() {
         // given
         val key1 = "server1"
-        val server1 = mock<Server<String>> {
+        val server1 = mock<Server> {
             on(it.key) doReturn key1
             on(it.health()) doReturn true
         }
         val key2 = "server2"
-        val server2 = mock<Server<String>> {
+        val server2 = mock<Server> {
             on(it.key) doReturn key2
             on(it.health()) doReturn false
         }
@@ -111,7 +111,7 @@ class DefaultCoordinatorTest {
     fun `should insert value to the closes server`() {
         // given
         val key = "key"
-        val server1 = mock<Server<String>> {
+        val server1 = mock<Server> {
             on(it.key) doReturn key
             on(it.health()) doReturn true
         }
@@ -138,7 +138,7 @@ class DefaultCoordinatorTest {
     fun `should read value from the closes server`() {
         // given
         val key = "key"
-        val server1 = mock<Server<String>> {
+        val server1 = mock<Server> {
             on(it.key) doReturn key
             on(it.health()) doReturn true
         }

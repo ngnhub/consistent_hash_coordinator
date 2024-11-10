@@ -10,7 +10,7 @@ import kotlinx.coroutines.launch
 
 class AsyncCoordinator<K>(
     private val delegated: Coordinator<K>,
-    private val serverBroker: ServerBroker<K>,
+    private val serverBroker: ServerBroker,
     private val scope: CoroutineScope = CoroutineScope(Dispatchers.Default)
 ) : Coordinator<K> by delegated {
 
@@ -22,7 +22,7 @@ class AsyncCoordinator<K>(
         }
     }
 
-    override fun removeServer(key: K): Server<K>? {
+    override fun removeServer(key: K): Server? {
         val removeServer = delegated.removeServer(key)
         removeServer?.let {
             scope.launch { serverBroker.sendDownServer(it) }

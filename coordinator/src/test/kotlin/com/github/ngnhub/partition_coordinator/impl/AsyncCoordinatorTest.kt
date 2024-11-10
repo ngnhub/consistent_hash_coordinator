@@ -21,7 +21,7 @@ import org.mockito.kotlin.*
 class AsyncCoordinatorTest {
 
     @Mock
-    private lateinit var broker: ServerBroker<String>
+    private lateinit var broker: ServerBroker
 
     private lateinit var delegated: DefaultCoordinator
 
@@ -34,7 +34,7 @@ class AsyncCoordinatorTest {
     @Test
     fun `should collect 3 servers asynchronously`() = runTest {
         // given
-        val channel = Channel<Server<String>>()
+        val channel = Channel<Server>()
         whenever(broker.subscribeOnNewServers()).thenReturn(channel)
         val coordinator = AsyncCoordinator(delegated, broker)
 
@@ -51,7 +51,7 @@ class AsyncCoordinatorTest {
     @Test
     fun `should remove 2 servers and 1 should left`() = runTest {
         // given
-        val channel = Channel<Server<String>>()
+        val channel = Channel<Server>()
         whenever(broker.subscribeOnNewServers()).thenReturn(channel)
         val coordinator = AsyncCoordinator(delegated, broker)
 
@@ -72,7 +72,7 @@ class AsyncCoordinatorTest {
     @Test
     fun `should remove without sending signal if value is not found`() = runTest {
         // given
-        val channel = Channel<Server<String>>()
+        val channel = Channel<Server>()
         whenever(broker.subscribeOnNewServers()).thenReturn(channel)
         val coordinator = AsyncCoordinator(delegated, broker)
 
@@ -93,7 +93,7 @@ class AsyncCoordinatorTest {
     @Test
     fun `should close scope when close func is invoked`() = runTest {
         // given
-        val channel = Channel<Server<String>>()
+        val channel = Channel<Server>()
         whenever(broker.subscribeOnNewServers()).thenReturn(channel)
         val scope = spy(CoroutineScope(Dispatchers.Default))
         val coordinator = AsyncCoordinator(delegated, broker, scope)
@@ -110,10 +110,10 @@ class AsyncCoordinatorTest {
         assertEquals(3, coordinator.serversCount)
     }
 
-    private suspend fun sendThreeMessages(channel: Channel<Server<String>>) {
-        val server1 = mock<Server<String>>()
-        val server2 = mock<Server<String>>()
-        val server3 = mock<Server<String>>()
+    private suspend fun sendThreeMessages(channel: Channel<Server>) {
+        val server1 = mock<Server>()
+        val server2 = mock<Server>()
+        val server3 = mock<Server>()
         whenever(server1.key).thenReturn("server1")
         whenever(server1.health()).thenReturn(true)
         whenever(server2.key).thenReturn("server2")
