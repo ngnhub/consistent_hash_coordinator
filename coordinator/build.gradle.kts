@@ -33,10 +33,16 @@ repositories {
 val consistentHashVersion = "1.0-SNAPSHOT"
 val coroutinesVersion = "1.9.0"
 val mockVersion = "5.4.0"
+val slf4jVersion = "2.0.16"
+val loggerVersion = "7.0.0"
 
 dependencies {
     api("com.github.ngnhub:consistent_hash:$consistentHashVersion")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
+
+    // logging
+    implementation("org.slf4j:slf4j-api:$slf4jVersion")
+    implementation("io.github.oshai:kotlin-logging-jvm:$loggerVersion")
 
     testImplementation(kotlin("test"))
     testImplementation("org.mockito.kotlin:mockito-kotlin:$mockVersion")
