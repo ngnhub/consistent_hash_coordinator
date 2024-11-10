@@ -8,7 +8,7 @@ class RedisServer(
     override val host: String,
     override val port: Int,
     override val virtualNodesKeys: Set<String> = mutableSetOf(),
-) : Server<String> {
+) : Server {
 
     private val redisTemplate = JedisPool(JedisPoolConfig(), host, port);
 
@@ -17,7 +17,7 @@ class RedisServer(
         value?.let { }
     }
 
-    override fun reDistribute(from: Server<String>) {
+    override fun reDistribute(from: Server) {
         TODO("Not yet implemented")
     }
 

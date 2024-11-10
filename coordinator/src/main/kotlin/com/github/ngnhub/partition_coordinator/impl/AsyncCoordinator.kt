@@ -8,11 +8,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 
-class AsyncCoordinator<K>(
-    private val delegated: Coordinator<K>,
-    private val serverBroker: ServerBroker,
+class AsyncCoordinator<K, S : Server>(
+    private val delegated: Coordinator<K, S>,
+    private val serverBroker: ServerBroker<S>,
     private val scope: CoroutineScope = CoroutineScope(Dispatchers.Default)
-) : Coordinator<K> by delegated {
+) : Coordinator<K, S> by delegated {
 
     fun startListening() = scope.launch {
         val channel = serverBroker
@@ -22,7 +22,7 @@ class AsyncCoordinator<K>(
         }
     }
 
-    override fun removeServer(key: K): Server? {
+    override fun removeServer(key: K): S? {
         val removeServer = delegated.removeServer(key)
         removeServer?.let {
             scope.launch { serverBroker.sendDownServer(it) }

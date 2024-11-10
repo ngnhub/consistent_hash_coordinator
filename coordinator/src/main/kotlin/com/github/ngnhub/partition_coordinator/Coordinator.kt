@@ -1,14 +1,14 @@
 package com.github.ngnhub.partition_coordinator
 
-interface Coordinator<K> {
+interface Coordinator<K, S : Server> {
 
     val serversCount: Int
 
-    fun addServer(server: Server)
+    fun addServer(server: S)
 
-    fun addVirtualNodes(vararg virtualNodes: K, sourceNode: K)
+    fun addVirtualNodes(vararg virtualNodes: S, sourceNode: S)
 
-    fun removeServer(key: K): Server?
+    fun removeServer(key: K): S?
 
     operator fun set(key: K, value: Any)
 

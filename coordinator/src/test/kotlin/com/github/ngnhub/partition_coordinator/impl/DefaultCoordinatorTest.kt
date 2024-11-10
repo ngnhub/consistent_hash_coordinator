@@ -17,7 +17,7 @@ class DefaultCoordinatorTest {
     @Mock
     lateinit var consistentHashMap: ConsistentHashMap<String, Server>
 
-    private lateinit var coordinator: DefaultCoordinator
+    private lateinit var coordinator: DefaultCoordinator<Server>
 
     @BeforeEach
     fun setUp() {

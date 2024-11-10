@@ -35,5 +35,5 @@ interface Server {
 
     fun insert(key: String, value: Any?) // todo : extra responsibility
 
-    fun reDistribute(from: Server)
+    fun reDistribute(from: Server) //todo to another class
 }

@@ -21,9 +21,9 @@ import org.mockito.kotlin.*
 class AsyncCoordinatorTest {
 
     @Mock
-    private lateinit var broker: ServerBroker
+    private lateinit var broker: ServerBroker<Server>
 
-    private lateinit var delegated: DefaultCoordinator
+    private lateinit var delegated: DefaultCoordinator<Server>
 
     @BeforeEach
     fun setUp() {

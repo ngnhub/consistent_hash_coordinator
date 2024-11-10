@@ -6,7 +6,7 @@ import com.github.ngnhub.redis_coordinator.service.ServiceStorageService
 import org.springframework.stereotype.Service
 
 @Service
-class ServiceStorageServiceImpl(private val coordinator: DefaultCoordinator) : ServiceStorageService {
+class ServiceStorageServiceImpl(private val coordinator: DefaultCoordinator<RedisServer>) : ServiceStorageService {
 
     private val tempMap = mutableMapOf<String, RedisServer>() //todo: it should be persist somewhere. db? redis it self?
 
@@ -17,7 +17,7 @@ class ServiceStorageServiceImpl(private val coordinator: DefaultCoordinator) : S
     }
 
     override fun read(key: String): String {
-       return coordinator[key] as String
+        return coordinator[key] as String
     }
 
     override fun isAlive(host: String, port: Int): Boolean {

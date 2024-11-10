@@ -6,14 +6,14 @@ import com.github.ngnhub.partition_coordinator.Coordinator
 import com.github.ngnhub.partition_coordinator.Server
 import com.github.ngnhub.partition_coordinator.exception.NoAvailableSever
 
-class DefaultCoordinator(
-    private val consistentHashMap: ConsistentHashMap<String, Server> = ConsistentHashMap(MurmurHashFunction())
-) : Coordinator<String> {
+class DefaultCoordinator<S : Server>(
+    private val consistentHashMap: ConsistentHashMap<String, S> = ConsistentHashMap(MurmurHashFunction())
+) : Coordinator<String, S> {
 
     override val serversCount: Int
         get() = consistentHashMap.size
 
-    override fun addServer(server: Server) {
+    override fun addServer(server: S) {
         consistentHashMap[server.key] = server
         consistentHashMap.nextAfter(server.key)
             ?.let { nextServer ->
@@ -22,7 +22,7 @@ class DefaultCoordinator(
             }
     }
 
-    override fun addVirtualNodes(vararg virtualNodes: String, sourceNode: String) {
+    override fun addVirtualNodes(vararg virtualNodes: S, sourceNode: S) {
         TODO("Not yet implemented")
     }
 
@@ -45,7 +45,7 @@ class DefaultCoordinator(
         return findFirstAvailableWithUnhealthyRemoval(server.key)
     }
 
-    override fun removeServer(key: String): Server? {
+    override fun removeServer(key: String): S? {
         return consistentHashMap - key
     }
 }
