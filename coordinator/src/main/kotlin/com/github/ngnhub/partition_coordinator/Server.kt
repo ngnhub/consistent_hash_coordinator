@@ -3,22 +3,21 @@ package com.github.ngnhub.partition_coordinator
 import com.github.ngnhub.consistent_hash.HashFunction
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.IOException
+import java.math.BigInteger
 import java.net.InetSocketAddress
 import java.net.Socket
 
 private const val CONNECTION_TIME_OUT = 3000
 private val logger = KotlinLogging.logger {}
 
-interface Server {
+abstract class Server(
+    val host: String,
+    val port: Int,
+    val key: String = host + port,
+    val virtualNodesKeys: Set<String> = mutableSetOf()
+) {
 
-    val host: String
-
-    val port: Int
-
-    val key: String
-        get() = host + port
-
-    val virtualNodesKeys: Set<String>
+    lateinit var hash: BigInteger
 
     fun health(): Boolean {
         Socket().use { socket ->
@@ -32,6 +31,6 @@ interface Server {
         }
     }
 
-    fun reDistribute(from: Server, hashFunction: HashFunction<String>)
+    abstract fun reDistribute(from: Server, by: HashFunction<String>)
     //todo how the type can be restricted by the generic??
 }
