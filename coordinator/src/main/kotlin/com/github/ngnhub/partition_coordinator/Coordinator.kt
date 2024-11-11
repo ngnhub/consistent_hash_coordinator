@@ -10,5 +10,5 @@ interface Coordinator<K, S : Server> {
 
     fun addVirtualNodes(vararg virtualNodes: S, sourceNode: S)
 
-    fun removeServer(key: K): S?
+    operator fun minus(key: K): S?
 }

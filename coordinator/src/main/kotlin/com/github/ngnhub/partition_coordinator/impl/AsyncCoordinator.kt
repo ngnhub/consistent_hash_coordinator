@@ -22,8 +22,8 @@ class AsyncCoordinator<K, S : Server>(
         }
     }
 
-    override fun removeServer(key: K): S? {
-        val removeServer = delegated.removeServer(key)
+    override fun minus(key: K): S? {
+        val removeServer = delegated - key
         removeServer?.let {
             scope.launch { serverBroker.sendDownServer(it) }
         }

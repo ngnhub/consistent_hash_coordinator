@@ -60,8 +60,8 @@ class AsyncCoordinatorTest {
         sendThreeMessages(channel)
         channel.close()
         consumeJob.join()
-        coordinator.removeServer("server1")
-        coordinator.removeServer("server2")
+        coordinator - "server1"
+        coordinator - "server2"
         delay(100L)
 
         // verify
@@ -81,7 +81,7 @@ class AsyncCoordinatorTest {
         sendThreeMessages(channel)
         channel.close()
         consumeJob.join()
-        val sendingJob = coordinator.removeServer("server4")
+        val sendingJob = coordinator - "server4"
         delay(100L)
 
         // verify

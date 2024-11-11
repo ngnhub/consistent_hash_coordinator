@@ -1,6 +1,6 @@
 package com.github.ngnhub.partition_coordinator.impl
 
-import com.github.ngnhub.consistent_hash.ConsistentHashMap
+import com.github.ngnhub.consistent_hash.HashFunction
 import com.github.ngnhub.partition_coordinator.Server
 import com.github.ngnhub.partition_coordinator.exception.NoAvailableSever
 import org.junit.jupiter.api.BeforeEach
@@ -9,20 +9,21 @@ import org.junit.jupiter.api.assertThrows
 import org.mockito.Mock
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.*
+import java.math.BigInteger
 import kotlin.test.assertEquals
 
 
 class DefaultCoordinatorTest {
 
     @Mock
-    lateinit var consistentHashMap: ConsistentHashMap<String, Server>
+    lateinit var consistentHashFunction: HashFunction<String>
 
     private lateinit var coordinator: DefaultCoordinator<Server>
 
     @BeforeEach
     fun setUp() {
         MockitoAnnotations.openMocks(this)
-        coordinator = DefaultCoordinator(consistentHashMap)
+        coordinator = DefaultCoordinator(consistentHashFunction)
     }
 
     @Test
@@ -32,23 +33,23 @@ class DefaultCoordinatorTest {
         val server1 = mock<Server> {
             on(it.key) doReturn key1
             on(it.health()) doReturn true
+            on(it.hash) doReturn BigInteger.ONE
         }
         val key2 = "server2"
         val server2 = mock<Server> {
             on(it.key) doReturn key2
             on(it.health()) doReturn true
+            on(it.hash) doReturn BigInteger.TWO
         }
         val key3 = "server3"
         val server3 = mock<Server> {
             on(it.key) doReturn key3
             on(it.health()) doReturn true
+            on(it.hash) doReturn BigInteger.valueOf(3L)
         }
-        whenever(consistentHashMap[server1.key]).thenReturn(server1)
-        whenever(consistentHashMap[server2.key]).thenReturn(server2)
-        whenever(consistentHashMap[server3.key]).thenReturn(server3)
-        whenever(consistentHashMap.nextAfter(key1)).thenReturn(server2)
-        whenever(consistentHashMap.nextAfter(key2)).thenReturn(server3)
-        whenever(consistentHashMap.nextAfter(key3)).thenReturn(server1)
+        whenever(consistentHashFunction.hash(key1)).thenReturn(BigInteger.valueOf(1))
+        whenever(consistentHashFunction.hash(key2)).thenReturn(BigInteger.valueOf(2))
+        whenever(consistentHashFunction.hash(key3)).thenReturn(BigInteger.valueOf(3))
 
         // when
         coordinator + server3
@@ -56,12 +57,8 @@ class DefaultCoordinatorTest {
         coordinator + server1
 
         // then
-        verify(consistentHashMap)[key1] = server1
-        verify(consistentHashMap)[key2] = server2
-        verify(consistentHashMap)[key3] = server3
-        verify(server1).reDistribute(server2)
-        verify(server2).reDistribute(server3)
-        verify(server3).reDistribute(server1)
+        verify(server2).reDistribute(server3, consistentHashFunction)
+        verify(server1).reDistribute(server2, consistentHashFunction)
     }
 
     @Test
@@ -72,14 +69,13 @@ class DefaultCoordinatorTest {
             on(it.key) doReturn key1
             on(it.health()) doReturn true
         }
-        whenever(consistentHashMap.nextAfter(key1)).thenReturn(null)
+        whenever(consistentHashFunction.hash(key1)).thenReturn(BigInteger.ONE)
 
         // when
         coordinator + server1
 
         // then
-        verify(consistentHashMap)[key1] = server1
-        verify(server1, never()).reDistribute(anyOrNull())
+        verify(server1, never()).reDistribute(anyOrNull(), anyOrNull())
     }
 
     @Test
@@ -89,47 +85,62 @@ class DefaultCoordinatorTest {
         val server1 = mock<Server> {
             on(it.key) doReturn key1
             on(it.health()) doReturn true
+            on(it.hash) doReturn BigInteger.ONE
         }
         val key2 = "server2"
         val server2 = mock<Server> {
             on(it.key) doReturn key2
-            on(it.health()) doReturn false
+            on(it.health()) doReturn true
+            on(it.hash) doReturn BigInteger.TWO
         }
-        whenever(consistentHashMap.nextAfter(key1)).thenReturn(server2)
-        whenever(consistentHashMap[key2]).thenReturn(server2).thenReturn(null)
+        whenever(consistentHashFunction.hash(key1)).thenReturn(BigInteger.ONE)
+        whenever(consistentHashFunction.hash(key2)).thenReturn(BigInteger.TWO)
 
         // when
+        coordinator + server2
+        assertEquals(1, coordinator.serversCount)
+        whenever(server2.health()).thenReturn(false)
         coordinator + server1
+        assertEquals(1, coordinator.serversCount)
 
         // then
-        verify(consistentHashMap)[key1] = server1
-        verify(consistentHashMap) - key2
-        verify(server1, never()).reDistribute(anyOrNull())
+        verify(server1, never()).reDistribute(anyOrNull(), anyOrNull())
     }
 
     @Test
     fun `should return server that is closest to the key`() {
         // given
-        val key = "key"
+        val key1 = "key1"
         val server1 = mock<Server> {
-            on(it.key) doReturn key
+            on(it.key) doReturn key1
             on(it.health()) doReturn true
+            on(it.hash) doReturn BigInteger.ONE
         }
-        val expected = "values"
-        whenever(consistentHashMap[key]).thenReturn(server1)
+        val key3 = "key3"
+        val server3 = mock<Server> {
+            on(it.key) doReturn key3
+            on(it.health()) doReturn true
+            on(it.hash) doReturn BigInteger.valueOf(3)
+        }
+        whenever(consistentHashFunction.hash(key1)).thenReturn(BigInteger.ONE)
+        whenever(consistentHashFunction.hash(key3)).thenReturn(BigInteger.valueOf(3))
+        coordinator + server1
+        coordinator + server3
+        val key2 = "key2"
+        whenever(consistentHashFunction.hash(key2)).thenReturn(BigInteger.TWO)
 
         // when
-        val actual = coordinator[key]
+        val actual = coordinator[key2]
 
         // then
-        assertEquals(server1, actual)
+        assertEquals(server3, actual)
     }
 
     @Test
     fun `should throw if no available server exist while reading`() {
         // given
         val key = "key"
-        whenever(consistentHashMap[key]).thenReturn(null)
+        whenever(consistentHashFunction.hash(key)).thenReturn(BigInteger.ONE)
 
         // when
         assertThrows<NoAvailableSever> { coordinator[key] }
@@ -139,28 +150,60 @@ class DefaultCoordinatorTest {
     fun `should remove from consistent hash`() {
         // given
         val key = "key"
-        coordinator.removeServer(key)
+        val server1 = mock<Server> {
+            on(it.key) doReturn key
+            on(it.health()) doReturn true
+            on(it.hash) doReturn BigInteger.ONE
+        }
+        whenever(consistentHashFunction.hash(key)).thenReturn(BigInteger.ONE)
+        coordinator + server1
+        assertEquals(1, coordinator.serversCount)
+
+        // when
+        coordinator - key
 
         // then
-        verify(consistentHashMap) - key
+        assertEquals(0, coordinator.serversCount)
     }
 
     @Test
     fun `should return size base on consistent hash size`() {
         // given
-        whenever(consistentHashMap.size)
-            .thenReturn(1)
-            .thenReturn(5)
-            .thenReturn(3)
+        val key1 = "server1"
+        val server1 = mock<Server> {
+            on(it.key) doReturn key1
+            on(it.health()) doReturn true
+            on(it.hash) doReturn BigInteger.ONE
+        }
+        val key2 = "server2"
+        val server2 = mock<Server> {
+            on(it.key) doReturn key2
+            on(it.health()) doReturn true
+            on(it.hash) doReturn BigInteger.TWO
+        }
+        val key3 = "server3"
+        val server3 = mock<Server> {
+            on(it.key) doReturn key3
+            on(it.health()) doReturn true
+            on(it.hash) doReturn BigInteger.valueOf(3L)
+        }
+        whenever(consistentHashFunction.hash(key1)).thenReturn(BigInteger.valueOf(1))
+        whenever(consistentHashFunction.hash(key2)).thenReturn(BigInteger.valueOf(2))
+        whenever(consistentHashFunction.hash(key3)).thenReturn(BigInteger.valueOf(3))
 
         // when
-        val size1 = coordinator.serversCount
-        val size2 = coordinator.serversCount
-        val size3 = coordinator.serversCount
+        val empty = coordinator.serversCount
+        coordinator + server1
+        val singleElem = coordinator.serversCount
+        coordinator + server2
+        val twoElems = coordinator.serversCount
+        coordinator + server3
+        val threeElems = coordinator.serversCount
 
         // then
-        assertEquals(1, size1)
-        assertEquals(5, size2)
-        assertEquals(3, size3)
+        assertEquals(0, empty)
+        assertEquals(1, singleElem)
+        assertEquals(2, twoElems)
+        assertEquals(3, threeElems)
     }
 }

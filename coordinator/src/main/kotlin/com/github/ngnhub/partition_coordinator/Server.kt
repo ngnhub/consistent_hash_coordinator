@@ -17,9 +17,9 @@ abstract class Server(
     val virtualNodesKeys: Set<String> = mutableSetOf()
 ) {
 
-    lateinit var hash: BigInteger
+    open lateinit var hash: BigInteger
 
-    fun health(): Boolean {
+    open fun health(): Boolean {
         Socket().use { socket ->
             try {
                 socket.connect(InetSocketAddress(host, port), CONNECTION_TIME_OUT);

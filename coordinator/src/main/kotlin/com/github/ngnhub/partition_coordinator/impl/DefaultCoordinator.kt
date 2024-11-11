@@ -12,7 +12,6 @@ class DefaultCoordinator<S : Server>(
     private val hashFunction: HashFunction<String> = MurmurHashFunction(),
 ) : Coordinator<String, S> {
 
-
     private val consistentHashRing: ConsistentHashRing<S> = ConsistentHashRing()
 
     override val serversCount: Int
@@ -22,35 +21,32 @@ class DefaultCoordinator<S : Server>(
         val newNodeHash = hashFunction.hash(server.key)
         server.hash = newNodeHash
         consistentHashRing[newNodeHash] = server
-        consistentHashRing.nextAfter(newNodeHash)
-            ?.let { nextServer ->
-                val nextServerHash = hashFunction.hash(nextServer.key)
-                findFirstAvailableWithUnhealthyRemoval(nextServerHash)
-                    ?.let { nextAvailableServer ->
-                        server.reDistribute(nextAvailableServer, hashFunction)
-                    }
+        nextAvailableServer(newNodeHash + BigInteger.ONE)?.let {
+            if (server.key != it.key) {
+                server.reDistribute(it, hashFunction)
             }
+        }
     }
 
     override fun get(key: String): S {
         val hash = hashFunction.hash(key)
-        return findFirstAvailableWithUnhealthyRemoval(hash) ?: throw NoAvailableSever()
+        return nextAvailableServer(hash) ?: throw NoAvailableSever()
     }
 
-    private fun findFirstAvailableWithUnhealthyRemoval(hash: BigInteger): S? {
-        val server = consistentHashRing[hash] ?: return null
-        if (server.health()) {
-            return server
+    private fun nextAvailableServer(hash: BigInteger): S? {
+        val nextAfter = consistentHashRing[hash] ?: return null
+        if (nextAfter.health()) {
+            return nextAfter
         }
-        removeServer(server.key)
-        return findFirstAvailableWithUnhealthyRemoval(hash)
+        this - nextAfter.key
+        return nextAvailableServer(nextAfter.hash + BigInteger.ONE)
     }
 
     override fun addVirtualNodes(vararg virtualNodes: S, sourceNode: S) {
         TODO("Not yet implemented")
     }
 
-    override fun removeServer(key: String): S? {
+    override fun minus(key: String): S? {
         val hash = hashFunction.hash(key)
         return consistentHashRing - hash
     }
