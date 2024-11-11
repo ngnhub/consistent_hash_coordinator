@@ -1,5 +1,6 @@
 package com.github.ngnhub.partition_coordinator
 
+import com.github.ngnhub.consistent_hash.HashFunction
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.IOException
 import java.net.InetSocketAddress
@@ -31,5 +32,6 @@ interface Server {
         }
     }
 
-    fun reDistribute(from: Server) //todo how the type can be restricted by the generic??
+    fun reDistribute(from: Server, hashFunction: HashFunction<String>)
+    //todo how the type can be restricted by the generic??
 }

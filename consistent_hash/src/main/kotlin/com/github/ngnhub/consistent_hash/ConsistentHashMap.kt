@@ -7,9 +7,9 @@ import java.util.concurrent.ConcurrentSkipListMap
 
 private val logger = KotlinLogging.logger {}
 
-class ConsistentHashMap<K, V>(private val hashFunction: HashFunction<K>) {
+class ConsistentHashMap<K, V>(val hashFunction: HashFunction<K>) {
 
-    private val map: ConcurrentSkipListMap<BigInteger, V?> = ConcurrentSkipListMap() // todo: delegate?
+    private val map: ConcurrentSkipListMap<BigInteger, V?> = ConcurrentSkipListMap()
 
     val size get() = map.size
 

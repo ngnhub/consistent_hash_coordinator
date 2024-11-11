@@ -18,7 +18,7 @@ class DefaultCoordinator<S : Server>(
         consistentHashMap.nextAfter(server.key)
             ?.let { nextServer ->
                 findFirstAvailableWithUnhealthyRemoval(nextServer.key)
-                    ?.let { nextAvailableServer -> server.reDistribute(nextAvailableServer) }
+                    ?.let { nextAvailableServer -> server.reDistribute(nextAvailableServer, consistentHashMap.hashFunction) }
             }
     }
 
