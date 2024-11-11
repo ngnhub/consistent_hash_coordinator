@@ -7,7 +7,7 @@ import java.util.concurrent.ConcurrentSkipListMap
 
 private val logger = KotlinLogging.logger {}
 
-class ConsistentHashMap<K, V>(val hashFunction: HashFunction<K>) {
+class ConsistentHashRing<V> {
 
     private val map: ConcurrentSkipListMap<BigInteger, V?> = ConcurrentSkipListMap()
 
@@ -21,45 +21,37 @@ class ConsistentHashMap<K, V>(val hashFunction: HashFunction<K>) {
      *
      * @throws CollisionException when collision has occurred
      */
-    operator fun set(key: K, value: V) {
-        val keyHash = hash(key)
-        if (map.containsKey(keyHash)) {
+    operator fun set(key: BigInteger, value: V) {
+        if (map.containsKey(key)) {
             throw CollisionException("Collision has occurred for key $key. The key must be modified")
         }
-        logger.debug { "Put '$value' at index '$keyHash'" }
-        map[keyHash] = value
+        logger.debug { "Put '$value' at key '$key'" }
+        map[key] = value
     }
 
     /**
      * Retrieve the closest value to the provided key; an exact key match is not required
      */
-    operator fun get(key: K): V? {
+    operator fun get(key: BigInteger): V? {
         if (map.isEmpty()) {
             return null
         }
-        val keyHash = hash(key)
-        if (map.containsKey(keyHash)) {
-            return map[keyHash]
+        if (map.containsKey(key)) {
+            return map[key]
         }
-        val ceilingEntry = map.ceilingEntry(keyHash) ?: map.firstEntry()
+        val ceilingEntry = map.ceilingEntry(key) ?: map.firstEntry()
         return ceilingEntry.value
     }
 
-    fun nextAfter(key: K): V? {
+    fun nextAfter(key: BigInteger): V? {
         if (map.isEmpty()) {
             return null
         }
-        val keyHash = hash(key)
-        val higherEntry = map.higherEntry(keyHash) ?: map.firstEntry()
-        return if (higherEntry!!.key == keyHash) null else higherEntry.value
+        val higherEntry = map.higherEntry(key) ?: map.firstEntry()
+        return if (higherEntry!!.key == key) null else higherEntry.value
     }
 
-    operator fun minus(key: K): V? {
-        val keyHash = hash(key)
-        return map.remove(keyHash)
-    }
-
-    private fun hash(key: K): BigInteger {
-        return hashFunction.hash(key)
+    operator fun minus(key: BigInteger): V? {
+        return map.remove(key)
     }
 }
