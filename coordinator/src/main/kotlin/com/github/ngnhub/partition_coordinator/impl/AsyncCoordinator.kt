@@ -18,7 +18,7 @@ class AsyncCoordinator<K, S : Server>(
         val channel = serverBroker
             .subscribeOnNewServers()
         for (server in channel) {
-            delegated.addServer(server)
+            delegated + server
         }
     }
 

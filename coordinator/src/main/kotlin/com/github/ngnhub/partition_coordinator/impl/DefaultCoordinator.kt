@@ -13,7 +13,7 @@ class DefaultCoordinator<S : Server>(
     override val serversCount: Int
         get() = consistentHashMap.size
 
-    override fun addServer(server: S) {
+    override fun plus(server: S) {
         consistentHashMap[server.key] = server
         consistentHashMap.nextAfter(server.key)
             ?.let { nextServer ->
@@ -22,27 +22,21 @@ class DefaultCoordinator<S : Server>(
             }
     }
 
-    override fun addVirtualNodes(vararg virtualNodes: S, sourceNode: S) {
-        TODO("Not yet implemented")
+    override fun get(key: String): S {
+        return findFirstAvailableWithUnhealthyRemoval(key) ?: throw NoAvailableSever()
     }
 
-    override fun set(key: String, value: Any) {
-        val server = findFirstAvailableWithUnhealthyRemoval(key) ?: throw NoAvailableSever()
-        server.insert(key, value)
-    }
-
-    override fun get(key: String): Any? {
-        val server = findFirstAvailableWithUnhealthyRemoval(key) ?: throw NoAvailableSever()
-        return server.read(key)
-    }
-
-    private fun findFirstAvailableWithUnhealthyRemoval(key: String): Server? {
+    private fun findFirstAvailableWithUnhealthyRemoval(key: String): S? {
         val server = consistentHashMap[key] ?: return null
         if (server.health()) {
             return server
         }
         removeServer(server.key)
         return findFirstAvailableWithUnhealthyRemoval(server.key)
+    }
+
+    override fun addVirtualNodes(vararg virtualNodes: S, sourceNode: S) {
+        TODO("Not yet implemented")
     }
 
     override fun removeServer(key: String): S? {

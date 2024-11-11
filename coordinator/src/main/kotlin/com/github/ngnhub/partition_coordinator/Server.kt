@@ -14,7 +14,7 @@ interface Server {
 
     val port: Int
 
-    val key: String // todo shouldn't be here. it is a ConsistentHash's responsibility
+    val key: String
         get() = host + port
 
     val virtualNodesKeys: Set<String>
@@ -31,9 +31,5 @@ interface Server {
         }
     }
 
-    fun read(key: String): Any? // todo : extra responsibility
-
-    fun insert(key: String, value: Any?) // todo : extra responsibility
-
-    fun reDistribute(from: Server) //todo to another class
+    fun reDistribute(from: Server) //todo how the type can be restricted by the generic??
 }

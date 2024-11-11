@@ -51,9 +51,9 @@ class DefaultCoordinatorTest {
         whenever(consistentHashMap.nextAfter(key3)).thenReturn(server1)
 
         // when
-        coordinator.addServer(server3)
-        coordinator.addServer(server2)
-        coordinator.addServer(server1)
+        coordinator + server3
+        coordinator + server2
+        coordinator + server1
 
         // then
         verify(consistentHashMap)[key1] = server1
@@ -75,7 +75,7 @@ class DefaultCoordinatorTest {
         whenever(consistentHashMap.nextAfter(key1)).thenReturn(null)
 
         // when
-        coordinator.addServer(server1)
+        coordinator + server1
 
         // then
         verify(consistentHashMap)[key1] = server1
@@ -99,7 +99,7 @@ class DefaultCoordinatorTest {
         whenever(consistentHashMap[key2]).thenReturn(server2).thenReturn(null)
 
         // when
-        coordinator.addServer(server1)
+        coordinator + server1
 
         // then
         verify(consistentHashMap)[key1] = server1
@@ -108,34 +108,7 @@ class DefaultCoordinatorTest {
     }
 
     @Test
-    fun `should insert value to the closes server`() {
-        // given
-        val key = "key"
-        val server1 = mock<Server> {
-            on(it.key) doReturn key
-            on(it.health()) doReturn true
-        }
-        whenever(consistentHashMap[key]).thenReturn(server1)
-
-        // when
-        coordinator[key] = "value"
-
-        // then
-        verify(server1).insert(key, "value")
-    }
-
-    @Test
-    fun `should throw if no available server exist while inserting`() {
-        // given
-        val key = "key"
-        whenever(consistentHashMap[key]).thenReturn(null)
-
-        // when
-        assertThrows<NoAvailableSever> { coordinator[key] = "value" }
-    }
-
-    @Test
-    fun `should read value from the closes server`() {
+    fun `should return server that is closest to the key`() {
         // given
         val key = "key"
         val server1 = mock<Server> {
@@ -144,14 +117,12 @@ class DefaultCoordinatorTest {
         }
         val expected = "values"
         whenever(consistentHashMap[key]).thenReturn(server1)
-        whenever(server1.read(key)).thenReturn(expected)
 
         // when
         val actual = coordinator[key]
 
         // then
-        assertEquals(expected, actual)
-        verify(server1).read(key)
+        assertEquals(server1, actual)
     }
 
     @Test
