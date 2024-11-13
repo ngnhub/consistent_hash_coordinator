@@ -1,10 +1,12 @@
 package com.github.ngnhub.redis_coordinator.service
 
-interface ServiceStorageService {
+import com.github.ngnhub.redis_coordinator.model.RedisServer
+
+interface ServerStorageService {
 
     fun addServer(host: String, port: Int)
 
-    fun read(key: String): String // todo  move to a more specific service
+    operator fun get(key: String): RedisServer
 
     fun isAlive(host: String, port: Int): Boolean
 }

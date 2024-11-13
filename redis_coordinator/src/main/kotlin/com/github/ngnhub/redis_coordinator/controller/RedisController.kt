@@ -1,15 +1,18 @@
 package com.github.ngnhub.redis_coordinator.controller
 
-import com.github.ngnhub.redis_coordinator.service.ServiceStorageService
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.RestController
+import com.github.ngnhub.redis_coordinator.service.RedisOperationsService
+import org.springframework.web.bind.annotation.*
 
 @RestController("redis")
-class RedisController(val serverStorageService: ServiceStorageService) {
+class RedisController(val redisOperationsService: RedisOperationsService) {
 
     @GetMapping("/{key}")
     fun getValue(@PathVariable key: String): Any? {
-        return serverStorageService.read(key)
+        return redisOperationsService[key]
+    }
+
+    @PostMapping("/{key}")
+    fun addValue(@PathVariable key: String, @RequestBody body: String) {
+        redisOperationsService[key] = body
     }
 }

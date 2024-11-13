@@ -1,13 +1,13 @@
 package com.github.ngnhub.redis_coordinator.controller
 
-import com.github.ngnhub.redis_coordinator.service.ServiceStorageService
+import com.github.ngnhub.redis_coordinator.service.ServerStorageService
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class ServerController(val serverStorageService: ServiceStorageService) {
+class ServerController(val serverStorageService: ServerStorageService) {
 
     @PostMapping("/server/{host}/{port}")
     fun addServer(@PathVariable host: String, @PathVariable port: Int) {

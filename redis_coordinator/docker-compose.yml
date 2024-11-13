@@ -8,7 +8,7 @@ services:
     ports:
       - '6379:6379'
     volumes:
-      - ../data:/data1
+      - ../data1:/data
     networks:
       - redis-network
 
@@ -17,10 +17,11 @@ services:
     hostname: redis2
     image: redis:latest
     restart: always
+    command: --port '6380'
     ports:
       - '6380:6380'
     volumes:
-      - ../data:/data2
+      - ../dat2:/data
     networks:
       - redis-network
 
@@ -29,9 +30,8 @@ services:
     hostname: redis-commander
     image: rediscommander/redis-commander:latest
     build: .
-    restart: always
     environment:
-      - REDIS_HOSTS=local:redis1:6379 local:redis2:6380
+      - REDIS_HOSTS= local:redis1:6379 local:redis2:6380
     ports:
       - "8081:8081"
     networks:

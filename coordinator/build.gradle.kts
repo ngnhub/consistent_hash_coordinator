@@ -56,6 +56,11 @@ tasks.test {
         events("passed", "failed")
     }
 }
+
+java {
+    withSourcesJar()
+}
+
 kotlin {
     jvmToolchain(21)
 }
