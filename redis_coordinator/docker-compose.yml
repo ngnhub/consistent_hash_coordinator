@@ -1,6 +1,6 @@
 version: '3.8'
 services:
-  redis:
+  redis1:
     container_name: redis1
     hostname: redis1
     image: redis:latest
@@ -8,7 +8,19 @@ services:
     ports:
       - '6379:6379'
     volumes:
-      - ../data:/data
+      - ../data:/data1
+    networks:
+      - redis-network
+
+  redis2:
+    container_name: redis2
+    hostname: redis2
+    image: redis:latest
+    restart: always
+    ports:
+      - '6380:6380'
+    volumes:
+      - ../data:/data2
     networks:
       - redis-network
 
@@ -19,7 +31,7 @@ services:
     build: .
     restart: always
     environment:
-      - REDIS_HOSTS=local:redis1:6379
+      - REDIS_HOSTS=local:redis1:6379 local:redis2:6380
     ports:
       - "8081:8081"
     networks:
