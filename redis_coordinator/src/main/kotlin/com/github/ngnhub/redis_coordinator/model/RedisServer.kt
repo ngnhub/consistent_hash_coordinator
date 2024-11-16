@@ -15,7 +15,7 @@ val logger = KotlinLogging.logger {}
 class RedisServer(
     host: String,
     port: Int,
-    private val redistributePageSize: Int,
+    val redistributePageSize: Int,
     private val redisPool: JedisPool = JedisPool(JedisPoolConfig(), host, port) // todo async lib
 ) : Server(host, port) {
 

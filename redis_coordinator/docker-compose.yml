@@ -46,6 +46,19 @@ services:
     networks:
       - redis-network
 
+  server_storage: #todo better ideas?
+    container_name: server_storage
+    hostname:  server_storage
+    image: redis:latest
+    restart: always
+    command: --port '6300'
+    ports:
+      - '6300:6300'
+    volumes:
+      - ../server_storage:/data
+    networks:
+      - redis-network
+
 networks:
   redis-network:
     driver: bridge

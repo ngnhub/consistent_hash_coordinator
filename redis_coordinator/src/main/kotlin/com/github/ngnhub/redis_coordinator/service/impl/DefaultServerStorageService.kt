@@ -2,18 +2,22 @@ package com.github.ngnhub.redis_coordinator.service.impl
 
 import com.github.ngnhub.partition_coordinator.impl.DefaultCoordinator
 import com.github.ngnhub.redis_coordinator.model.RedisServer
+import com.github.ngnhub.redis_coordinator.service.ServerStorage
 import com.github.ngnhub.redis_coordinator.service.ServerStorageService
+import com.github.ngnhub.redis_coordinator.service.StorableRedisServer
 import org.springframework.stereotype.Service
 
 @Service
-class DefaultServerStorageService(private val coordinator: DefaultCoordinator<RedisServer>) : ServerStorageService {
+class DefaultServerStorageService(
+    private val coordinator: DefaultCoordinator<RedisServer>,
+    private val serverStorage: ServerStorage
+) : ServerStorageService {
 
-    private val tempMap = mutableMapOf<String, RedisServer>() //todo: it should be persist somewhere. db? redis it self?
 
     override fun addServer(host: String, port: Int) {
         val server = RedisServer(host, port, 100)
         coordinator + server
-        tempMap[server.key] = server
+        serverStorage[server.key] = StorableRedisServer(server.host, server.port, server.redistributePageSize)
     }
 
     override fun get(key: String): RedisServer {
@@ -21,8 +25,8 @@ class DefaultServerStorageService(private val coordinator: DefaultCoordinator<Re
     }
 
     override fun isAlive(host: String, port: Int): Boolean {
-        tempMap[host + port]?.let {
-            return it.health()
+        serverStorage[host + port]?.let {
+            return RedisServer(it.host, it.port, it.redistributePageSize).health()
         }
         return false
     }
