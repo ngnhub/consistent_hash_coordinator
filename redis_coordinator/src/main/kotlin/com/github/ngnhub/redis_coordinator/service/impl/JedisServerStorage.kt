@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service
 import redis.clients.jedis.JedisPool
 import redis.clients.jedis.params.ScanParams
 
+// todo: need smth more clever
 @Service
 class JedisServerStorage(
     jedisServerStorageProperty: JedisServerStorageProperty,

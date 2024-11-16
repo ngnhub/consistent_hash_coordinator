@@ -8,7 +8,6 @@ import redis.clients.jedis.JedisPool
 import redis.clients.jedis.JedisPoolConfig
 import redis.clients.jedis.params.MigrateParams
 import redis.clients.jedis.params.ScanParams
-import redis.clients.jedis.resps.ScanResult
 
 val logger = KotlinLogging.logger {}
 
@@ -25,8 +24,11 @@ class RedisServer(
     }
 
     private fun migrateBatched(hashFunction: HashFunction<String>, resource: Jedis) {
-        var scan = resource.scan("0", ScanParams().count(redistributePageSize))
-        while (scan.isNotEmpty()) {
+        var cursor = ScanParams.SCAN_POINTER_START
+        var hasValue = true
+
+        while (hasValue) {
+            val scan = resource.scan(cursor, ScanParams().count(redistributePageSize))
             val migrateParams = MigrateParams().copy()
             val timeout = 3000 // todo: how to chose? how to handle if timed out
             val keysForMigration = scan.result
@@ -35,12 +37,11 @@ class RedisServer(
             // todo doesnt work with localhost need to run in a container
             resource.migrate(host, port, timeout, migrateParams, *keysForMigration)
             // todo what if key is already removed
+            cursor = scan.cursor
+            hasValue = cursor != ScanParams.SCAN_POINTER_START
             logger.info { "Migrated ${scan.result.size}" }
-            scan = resource.scan(scan.cursor)
         }
     }
-
-    private fun ScanResult<String>.isNotEmpty() = this.result.isNotEmpty()
 
     fun read(key: String): Any? = redisPool.resource.use { redis ->
         return redis.get(key)
