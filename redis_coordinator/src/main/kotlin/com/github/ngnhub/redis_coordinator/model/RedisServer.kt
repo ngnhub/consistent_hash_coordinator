@@ -25,7 +25,7 @@ class RedisServer(
     }
 
     private fun migrateBatched(hashFunction: HashFunction<String>, resource: Jedis) {
-        var scan = resource.scan("0", ScanParams().count(redistributePageSize).match("*"))
+        var scan = resource.scan("0", ScanParams().count(redistributePageSize))
         while (scan.isNotEmpty()) {
             val migrateParams = MigrateParams().copy()
             val timeout = 3000 // todo: how to chose? how to handle if timed out

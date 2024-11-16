@@ -37,6 +37,15 @@ services:
     networks:
       - redis-network
 
+  redis-coordinator:
+    container_name: redis-coordinator
+    image: ngnhub/redis-coordinator:latest
+    build: .
+    ports:
+      - "8080:8080"
+    networks:
+      - redis-network
+
 networks:
   redis-network:
     driver: bridge
