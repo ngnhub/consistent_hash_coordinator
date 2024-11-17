@@ -8,6 +8,7 @@ import redis.clients.jedis.JedisPool
 import redis.clients.jedis.JedisPoolConfig
 import redis.clients.jedis.params.MigrateParams
 import redis.clients.jedis.params.ScanParams
+import java.math.BigInteger
 
 val logger = KotlinLogging.logger {}
 
@@ -20,26 +21,44 @@ class RedisServer(
 
     override fun reDistribute(from: Server, by: HashFunction<String>) {
         val redisServer = from as RedisServer
-        redisServer.redisPool.resource.use { resource -> migrateBatched(by, resource) }
+        redisServer.redisPool.resource.use { resource -> migrateBatched(by, resource, from.hash) }
     }
 
-    private fun migrateBatched(hashFunction: HashFunction<String>, resource: Jedis) {
+    private fun migrateBatched(
+        hashFunction: HashFunction<String>,
+        fromServiceResource: Jedis,
+        fromServerHash: BigInteger
+    ) {
         var cursor = ScanParams.SCAN_POINTER_START
         var hasValue = true
 
         while (hasValue) {
-            val scan = resource.scan(cursor, ScanParams().count(redistributePageSize))
-            val migrateParams = MigrateParams().copy()
+            val scan = fromServiceResource.scan(cursor, ScanParams().count(redistributePageSize))
+            val migrateParams = MigrateParams()
             val timeout = 3000 // todo: how to chose? how to handle if timed out
-            val keysForMigration = scan.result
-                .filter { key -> hashFunction.hash(key) <= hash }
+            val keysForMigration = scan.result.asSequence()
+                .filter { keyOfValue -> isHashInside(fromServerHash, hashFunction.hash(keyOfValue)) }
+                .toSet()
                 .toTypedArray()
             // todo doesnt work with localhost need to run in a container
-            resource.migrate(host, port, timeout, migrateParams, *keysForMigration)
+            fromServiceResource.migrate(host, port, timeout, migrateParams, *keysForMigration)
             // todo what if key is already removed
             cursor = scan.cursor
             hasValue = cursor != ScanParams.SCAN_POINTER_START
             logger.info { "Migrated ${scan.result.size}" }
         }
+    }
+
+    private fun isHashInside(
+        fromServerHash: BigInteger,
+        keyOfValueHash: BigInteger
+    ): Boolean {
+        if (hash > fromServerHash) {
+            return keyOfValueHash > fromServerHash && keyOfValueHash <= hash
+        }
+        if (hash < fromServerHash) {
+            return keyOfValueHash <= hash || keyOfValueHash > fromServerHash
+        }
+        throw IllegalArgumentException("Can not redistribute within one server")
     }
 }
