@@ -25,13 +25,26 @@ services:
     networks:
       - redis-network
 
+  redis3:
+    container_name: redis3
+    hostname: redis3
+    image: redis:latest
+    restart: always
+    command: --port '6381'
+    ports:
+      - '6381:6381'
+    volumes:
+      - ../dat3:/data
+    networks:
+      - redis-network
+
   redis-commander:
     container_name: redis-commander
     hostname: redis-commander
     image: rediscommander/redis-commander:latest
     build: .
     environment:
-      - REDIS_HOSTS= local:redis1:6379 local:redis2:6380
+      - REDIS_HOSTS= local:redis1:6379 local:redis2:6380 local:redis3:6381 local:server_storage:6300
     ports:
       - "8081:8081"
     networks:
@@ -40,7 +53,7 @@ services:
   redis-coordinator:
     container_name: redis-coordinator
     image: ngnhub/redis-coordinator:latest
-    build: .
+    restart: always
     ports:
       - "8080:8080"
     networks:
@@ -48,7 +61,7 @@ services:
 
   server_storage: #todo better ideas?
     container_name: server_storage
-    hostname:  server_storage
+    hostname: server_storage
     image: redis:latest
     restart: always
     command: --port '6300'

@@ -3,4 +3,4 @@ spring:
     name: redis_coordinator
 jedis-server-storage:
   host: localhost
-  port: 6300
+  port: 6000

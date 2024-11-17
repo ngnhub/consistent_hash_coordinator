@@ -24,9 +24,11 @@ class JedisServerStorage(
             var cursor = ScanParams.SCAN_POINTER_START
             while (hasValues) {
                 val scan = jedis.scan(cursor, param)
-                jedis.mget(*scan.result.toTypedArray()).asSequence()
-                    .map { server -> mapper.readValue(server.toString(), StorableRedisServer::class.java) }
-                    .forEach { server -> servers.add(server) }
+                if (scan.result.isNotEmpty()) {
+                    jedis.mget(*scan.result.toTypedArray()).asSequence()
+                        .map { server -> mapper.readValue(server.toString(), StorableRedisServer::class.java) }
+                        .forEach { server -> servers.add(server) }
+                }
                 cursor = scan.cursor
                 hasValues = cursor != ScanParams.SCAN_POINTER_START
             }

@@ -1,0 +1,3 @@
+jedis-server-storage:
+  host: server_storage
+  port: 6300
