@@ -24,6 +24,11 @@ class DefaultServerStorageService(
         return coordinator[key]
     }
 
+    override fun minus(key: String) {
+        coordinator - key
+        serverStorage - key
+    }
+
     override fun isAlive(host: String, port: Int): Boolean {
         serverStorage[host + port]?.let {
             return RedisServer(it.host, it.port, it.redistributePageSize).health()

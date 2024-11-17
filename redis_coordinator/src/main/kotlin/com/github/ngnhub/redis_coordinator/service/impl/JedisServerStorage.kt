@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service
 import redis.clients.jedis.JedisPool
 import redis.clients.jedis.params.ScanParams
 
-// todo: need smth more clever
+// todo: need smth more clever (like hearth bits?)
 @Service
 class JedisServerStorage(
     jedisServerStorageProperty: JedisServerStorageProperty,

@@ -15,7 +15,7 @@ class RedisServer(
     host: String,
     port: Int,
     val redistributePageSize: Int,
-    private val redisPool: JedisPool = JedisPool(JedisPoolConfig(), host, port) // todo async lib
+    val redisPool: JedisPool = JedisPool(JedisPoolConfig(), host, port) // todo async lib
 ) : Server(host, port) {
 
     override fun reDistribute(from: Server, by: HashFunction<String>) {
@@ -41,13 +41,5 @@ class RedisServer(
             hasValue = cursor != ScanParams.SCAN_POINTER_START
             logger.info { "Migrated ${scan.result.size}" }
         }
-    }
-
-    fun read(key: String): Any? = redisPool.resource.use { redis ->
-        return redis.get(key)
-    }
-
-    fun insert(key: String, value: String): Unit = redisPool.resource.use { redis ->
-        redis.set(key, value)
     }
 }
