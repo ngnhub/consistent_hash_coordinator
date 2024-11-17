@@ -1,17 +1,15 @@
 package com.github.ngnhub.redis_coordinator.controller
 
 import com.github.ngnhub.redis_coordinator.service.ServerStorageService
+import com.github.ngnhub.redis_coordinator.model.RedisServerDto
 import com.github.ngnhub.redis_coordinator.service.impl.JedisServerStorage
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 
 @RestController
 class ServerController(val serverStorageService: ServerStorageService, val serverStorage: JedisServerStorage) {
 
-    @PostMapping("/server/{host}/{port}")
-    fun addServer(@PathVariable host: String, @PathVariable port: Int) = serverStorageService.addServer(host, port)
+    @PostMapping("/server")
+    fun addServer(@RequestBody server: RedisServerDto) = serverStorageService.addServer(server)
 
 
     @GetMapping("/server/{host}/{port}")
@@ -19,4 +17,7 @@ class ServerController(val serverStorageService: ServerStorageService, val serve
 
     @GetMapping("/servers")
     fun getAll() = serverStorage.getAll()
+
+    @DeleteMapping("/servers/{host}/{port}")
+    fun remove(@PathVariable host: String, @PathVariable port: Int) = serverStorageService - (host + port)
 }

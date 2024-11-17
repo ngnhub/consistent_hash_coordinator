@@ -1,6 +1,6 @@
 package com.github.ngnhub.redis_coordinator.service.impl
 
-import com.github.ngnhub.redis_coordinator.service.StorableRedisServer
+import com.github.ngnhub.redis_coordinator.model.RedisServerDto
 import com.github.ngnhub.redis_coordinator.service.impl.config.TestRedisEmbeddedConfig
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -28,7 +28,7 @@ internal class JedisServerStorageTest {
     @Test
     fun `should add and return server`() {
         // given
-        val input = StorableRedisServer("host", 0, 0)
+        val input = RedisServerDto("host", 0, 0)
         val key = "key"
 
         // when
@@ -42,7 +42,7 @@ internal class JedisServerStorageTest {
     @Test
     fun `should add than remove value`() {
         // given
-        val input = StorableRedisServer("host", 0, 0)
+        val input = RedisServerDto("host", 0, 0)
         val key = "key"
         jedisStorageServer[key] = input
         val returned = jedisStorageServer[key]
@@ -58,8 +58,8 @@ internal class JedisServerStorageTest {
     @Test
     fun `should return all`() {
         // given
-        val input1 = StorableRedisServer("host1", 0, 0)
-        val input2 = StorableRedisServer("host2", 0, 0)
+        val input1 = RedisServerDto("host1", 0, 0)
+        val input2 = RedisServerDto("host2", 0, 0)
 
         // when
         jedisStorageServer["key1"] = input1

@@ -3,7 +3,7 @@ package com.github.ngnhub.redis_coordinator.service.impl
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.ngnhub.redis_coordinator.config.JedisServerStorageProperty
 import com.github.ngnhub.redis_coordinator.service.ServerStorage
-import com.github.ngnhub.redis_coordinator.service.StorableRedisServer
+import com.github.ngnhub.redis_coordinator.model.RedisServerDto
 import org.springframework.stereotype.Service
 import redis.clients.jedis.JedisPool
 import redis.clients.jedis.params.ScanParams
@@ -16,9 +16,9 @@ class JedisServerStorage(
 ) : ServerStorage {
     private val jedisPool = JedisPool(jedisServerStorageProperty.host, jedisServerStorageProperty.port)
 
-    override fun getAll(): List<StorableRedisServer> {
+    override fun getAll(): List<RedisServerDto> {
         val param = ScanParams().count(10)
-        val servers = mutableListOf<StorableRedisServer>()
+        val servers = mutableListOf<RedisServerDto>()
         jedisPool.resource.use { jedis ->
             var hasValues = true
             var cursor = ScanParams.SCAN_POINTER_START
@@ -26,7 +26,7 @@ class JedisServerStorage(
                 val scan = jedis.scan(cursor, param)
                 if (scan.result.isNotEmpty()) {
                     jedis.mget(*scan.result.toTypedArray()).asSequence()
-                        .map { server -> mapper.readValue(server.toString(), StorableRedisServer::class.java) }
+                        .map { server -> mapper.readValue(server.toString(), RedisServerDto::class.java) }
                         .forEach { server -> servers.add(server) }
                 }
                 cursor = scan.cursor
@@ -36,9 +36,9 @@ class JedisServerStorage(
         return servers
     }
 
-    override fun set(key: String, server: StorableRedisServer) {
+    override fun set(key: String, server: RedisServerDto) {
         jedisPool.resource.use { jedis ->
-            val value = StorableRedisServer(server.host, server.port, server.redistributePageSize)
+            val value = RedisServerDto(server.host, server.port, server.redistributePageSize)
             jedis.set(key, mapper.writeValueAsString(value))
         }
     }
@@ -49,11 +49,11 @@ class JedisServerStorage(
         }
     }
 
-    override fun get(key: String): StorableRedisServer? {
+    override fun get(key: String): RedisServerDto? {
         jedisPool.resource.use { jedis ->
             val result = jedis.get(key)
             if (result != null) {
-                return mapper.readValue(result.toString(), StorableRedisServer::class.java)
+                return mapper.readValue(result.toString(), RedisServerDto::class.java)
             }
         }
         return null

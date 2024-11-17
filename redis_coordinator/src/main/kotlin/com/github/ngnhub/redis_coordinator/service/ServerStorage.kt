@@ -1,14 +1,15 @@
 package com.github.ngnhub.redis_coordinator.service
 
+import com.github.ngnhub.redis_coordinator.model.RedisServerDto
+
 interface ServerStorage {
 
-    fun getAll(): List<StorableRedisServer>
+    fun getAll(): List<RedisServerDto>
 
-    operator fun set(key: String, server: StorableRedisServer)
+    operator fun set(key: String, server: RedisServerDto)
 
     operator fun minus(key: String)
 
-    operator fun get(key: String): StorableRedisServer?
+    operator fun get(key: String): RedisServerDto?
 }
 
-data class StorableRedisServer(val host: String, val port: Int, val redistributePageSize: Int)

@@ -2,9 +2,10 @@ package com.github.ngnhub.redis_coordinator.service.impl
 
 import com.github.ngnhub.partition_coordinator.impl.DefaultCoordinator
 import com.github.ngnhub.redis_coordinator.model.RedisServer
+import com.github.ngnhub.redis_coordinator.model.RedisServerDto
 import com.github.ngnhub.redis_coordinator.service.ServerStorage
 import com.github.ngnhub.redis_coordinator.service.ServerStorageService
-import com.github.ngnhub.redis_coordinator.service.StorableRedisServer
+import jakarta.annotation.PostConstruct
 import org.springframework.stereotype.Service
 
 @Service
@@ -14,10 +15,15 @@ class DefaultServerStorageService(
 ) : ServerStorageService {
 
 
-    override fun addServer(host: String, port: Int) {
-        val server = RedisServer(host, port, 100)
+    @PostConstruct
+    fun init() {
+        serverStorage.getAll().forEach { addServer(it) }
+    }
+
+    override fun addServer(redisServerDto: RedisServerDto) {
+        val server = RedisServer(redisServerDto.host, redisServerDto.port, redisServerDto.redistributePageSize)
         coordinator + server
-        serverStorage[server.key] = StorableRedisServer(server.host, server.port, server.redistributePageSize)
+        serverStorage[server.key] = RedisServerDto(server.host, server.port, server.redistributePageSize)
     }
 
     override fun get(key: String): RedisServer {
