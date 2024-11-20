@@ -1,5 +1,6 @@
 package com.github.ngnhub.partition_coordinator.impl
 
+import com.github.ngnhub.consistent_hash.ConsistentHashRing
 import com.github.ngnhub.consistent_hash.HashFunction
 import com.github.ngnhub.partition_coordinator.Server
 import com.github.ngnhub.partition_coordinator.exception.NoAvailableSever
@@ -8,6 +9,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.Mock
 import org.mockito.MockitoAnnotations
+import org.mockito.Spy
 import org.mockito.kotlin.*
 import java.math.BigInteger
 import kotlin.test.assertEquals
@@ -18,12 +20,15 @@ class DefaultCoordinatorTest {
     @Mock
     lateinit var consistentHashFunction: HashFunction<String>
 
+    @Spy
+    val consistentHashRing = ConsistentHashRing<Server>()
+
     private lateinit var coordinator: DefaultCoordinator<Server>
 
     @BeforeEach
     fun setUp() {
         MockitoAnnotations.openMocks(this)
-        coordinator = DefaultCoordinator(consistentHashFunction)
+        coordinator = DefaultCoordinator(consistentHashFunction, consistentHashRing)
     }
 
     @Test
@@ -57,6 +62,9 @@ class DefaultCoordinatorTest {
         coordinator + server1
 
         // then
+        verify(consistentHashRing)[BigInteger.valueOf(1)] = server1
+        verify(consistentHashRing)[BigInteger.valueOf(2)] = server2
+        verify(consistentHashRing)[BigInteger.valueOf(3)] = server3
         verify(server2).reDistribute(server3, consistentHashFunction)
         verify(server1).reDistribute(server2, consistentHashFunction)
     }
@@ -75,6 +83,7 @@ class DefaultCoordinatorTest {
         coordinator + server1
 
         // then
+        verify(consistentHashRing)[BigInteger.valueOf(1)] = server1
         verify(server1, never()).reDistribute(anyOrNull(), anyOrNull())
     }
 
@@ -104,6 +113,9 @@ class DefaultCoordinatorTest {
         assertEquals(1, coordinator.serversCount)
 
         // then
+        verify(consistentHashRing)[BigInteger.valueOf(2)] = server2
+        verify(consistentHashRing) - BigInteger.valueOf(2)
+        verify(consistentHashRing)[BigInteger.valueOf(1)] = server1
         verify(server1, never()).reDistribute(anyOrNull(), anyOrNull())
     }
 
@@ -163,6 +175,7 @@ class DefaultCoordinatorTest {
         coordinator - key
 
         // then
+        verify(consistentHashRing) - BigInteger.ONE
         assertEquals(0, coordinator.serversCount)
     }
 

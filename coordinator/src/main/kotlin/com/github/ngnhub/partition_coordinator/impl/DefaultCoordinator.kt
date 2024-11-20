@@ -10,9 +10,8 @@ import java.math.BigInteger
 
 class DefaultCoordinator<S : Server>(
     private val hashFunction: HashFunction<String> = MurmurHashFunction(),
-) : Coordinator<String, S> {
-
     private val consistentHashRing: ConsistentHashRing<S> = ConsistentHashRing()
+) : Coordinator<String, S> {
 
     override val serversCount: Int
         get() = consistentHashRing.size
@@ -28,7 +27,7 @@ class DefaultCoordinator<S : Server>(
                 }
             }
         } catch (e: Exception) { //todo test
-            consistentHashRing - server.hash
+            this - server.key
             throw e
         }
     }
