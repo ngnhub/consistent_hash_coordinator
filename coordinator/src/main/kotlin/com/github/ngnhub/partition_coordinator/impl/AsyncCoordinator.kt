@@ -22,8 +22,8 @@ class AsyncCoordinator<K, S : Server>(
         }
     }
 
-    override fun minus(server: S): S? {
-        val removed = delegated - server
+    override fun minus(key: K): S? {
+        val removed = delegated - key
         removed?.let {
             serverBroker.sendDownServer(it)
         }

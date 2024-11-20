@@ -60,15 +60,13 @@ class AsyncCoordinatorTest {
         sendThreeMessages(channel)
         channel.close()
         consumeJob.join()
-        coordinator - mock<Server> {
-            on(it.key) doReturn "server1"
-        }
-        coordinator - mock<Server> {
-            on(it.key) doReturn "server2"
-        }
+        val removed1 = coordinator - "server1"
+        val removed2 = coordinator - "server2"
         delay(100L)
 
         // then
+        assertNotNull(removed1)
+        assertNotNull(removed2)
         verify(broker, times(2)).sendDownServer(anyOrNull())
         assertEquals(1, coordinator.serversCount)
     }
@@ -85,9 +83,7 @@ class AsyncCoordinatorTest {
         sendThreeMessages(channel)
         channel.close()
         consumeJob.join()
-        val removed = coordinator - mock<Server> {
-            on(it.key) doReturn "server4"
-        }
+        val removed = coordinator - "server4"
         delay(100L)
 
         // then

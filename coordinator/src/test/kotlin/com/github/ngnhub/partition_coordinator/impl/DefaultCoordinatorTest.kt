@@ -198,7 +198,7 @@ class DefaultCoordinatorTest {
         assertEquals(1, coordinator.serversCount)
 
         // when
-        val removed = coordinator - server1
+        val removed = coordinator - server1.key
 
         // then
         verify(consistentHashRing) - BigInteger.ONE

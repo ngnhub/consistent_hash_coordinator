@@ -30,7 +30,7 @@ class DefaultCoordinator<S : Server>(
                 }
             }
         } catch (e: Exception) {
-            this - server
+            this - server.key
             throw e
         } finally {
             lock.unlock()
@@ -47,7 +47,7 @@ class DefaultCoordinator<S : Server>(
         if (nextAfter.health()) {
             return nextAfter
         }
-        this - nextAfter
+        this - nextAfter.key
         return nextAvailableServer(nextAfter.hash + BigInteger.ONE)
     }
 
@@ -55,8 +55,8 @@ class DefaultCoordinator<S : Server>(
         TODO("Not yet implemented")
     }
 
-    override fun minus(server: S): S? {
-        val hash = hashFunction.hash(server.key)
+    override fun minus(key: String): S? {
+        val hash = hashFunction.hash(key)
         return consistentHashRing - hash
     }
 }
