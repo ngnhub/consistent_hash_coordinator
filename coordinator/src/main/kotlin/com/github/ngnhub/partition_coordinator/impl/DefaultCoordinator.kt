@@ -7,20 +7,23 @@ import com.github.ngnhub.partition_coordinator.Coordinator
 import com.github.ngnhub.partition_coordinator.Server
 import com.github.ngnhub.partition_coordinator.exception.NoAvailableSever
 import java.math.BigInteger
+import java.util.concurrent.locks.ReentrantLock
 
 class DefaultCoordinator<S : Server>(
     private val hashFunction: HashFunction<String> = MurmurHashFunction(),
-    private val consistentHashRing: ConsistentHashRing<S> = ConsistentHashRing()
+    private val consistentHashRing: ConsistentHashRing<S> = ConsistentHashRing(),
+    private val lock: ReentrantLock = ReentrantLock()
 ) : Coordinator<String, S> {
 
     override val serversCount: Int
         get() = consistentHashRing.size
 
     override fun plus(server: S) { // todo sync
-        val newNodeHash = hashFunction.hash(server.key)
-        server.hash = newNodeHash
-        consistentHashRing[newNodeHash] = server
         try {
+            lock.lock()
+            val newNodeHash = hashFunction.hash(server.key)
+            server.hash = newNodeHash
+            consistentHashRing[newNodeHash] = server
             nextAvailableServer(newNodeHash + BigInteger.ONE)?.let {
                 if (server.key != it.key) {
                     server.reDistribute(it, hashFunction)
@@ -29,6 +32,8 @@ class DefaultCoordinator<S : Server>(
         } catch (e: Exception) { //todo test
             this - server.key
             throw e
+        } finally {
+            lock.unlock()
         }
     }
 

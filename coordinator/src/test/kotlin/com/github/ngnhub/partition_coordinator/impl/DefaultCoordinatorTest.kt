@@ -12,6 +12,7 @@ import org.mockito.MockitoAnnotations
 import org.mockito.Spy
 import org.mockito.kotlin.*
 import java.math.BigInteger
+import java.util.concurrent.locks.ReentrantLock
 import kotlin.test.assertEquals
 
 
@@ -23,12 +24,15 @@ class DefaultCoordinatorTest {
     @Spy
     val consistentHashRing = ConsistentHashRing<Server>()
 
+    @Spy
+    val lock = ReentrantLock()
+
     private lateinit var coordinator: DefaultCoordinator<Server>
 
     @BeforeEach
     fun setUp() {
         MockitoAnnotations.openMocks(this)
-        coordinator = DefaultCoordinator(consistentHashFunction, consistentHashRing)
+        coordinator = DefaultCoordinator(consistentHashFunction, consistentHashRing, lock)
     }
 
     @Test
@@ -67,6 +71,8 @@ class DefaultCoordinatorTest {
         verify(consistentHashRing)[BigInteger.valueOf(3)] = server3
         verify(server2).reDistribute(server3, consistentHashFunction)
         verify(server1).reDistribute(server2, consistentHashFunction)
+        verify(lock, times(3)).lock()
+        verify(lock, times(3)).unlock()
     }
 
     @Test
@@ -117,6 +123,24 @@ class DefaultCoordinatorTest {
         verify(consistentHashRing) - BigInteger.valueOf(2)
         verify(consistentHashRing)[BigInteger.valueOf(1)] = server1
         verify(server1, never()).reDistribute(anyOrNull(), anyOrNull())
+    }
+
+    @Test
+    fun `should unlock when throws`() {
+        // given
+        whenever(consistentHashFunction.hash(anyOrNull())).thenThrow(RuntimeException::class.java)
+        val server = mock<Server> {
+            on(it.key) doReturn "key"
+            on(it.health()) doReturn true
+            on(it.hash) doReturn BigInteger.ONE
+        }
+
+        // when
+        assertThrows<RuntimeException> {coordinator + server}
+
+        // then
+        verify(lock).lock()
+        verify(lock).unlock()
     }
 
     @Test
