@@ -14,7 +14,6 @@ class DefaultServerStorageService(
     private val serverStorage: ServerStorage
 ) : ServerStorageService {
 
-
     @PostConstruct
     fun init() {
         serverStorage.getAll().forEach { addServer(it) }

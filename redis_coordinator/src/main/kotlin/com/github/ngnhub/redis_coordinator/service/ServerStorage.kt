@@ -12,4 +12,3 @@ interface ServerStorage {
 
     operator fun get(key: String): RedisServerDto?
 }
-
