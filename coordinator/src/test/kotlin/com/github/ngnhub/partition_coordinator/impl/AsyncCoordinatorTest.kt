@@ -43,7 +43,7 @@ class AsyncCoordinatorTest {
         sendThreeMessages(channel)
         channel.close()
 
-        // verify
+        // then
         job.join()
         assertEquals(3, coordinator.serversCount)
     }
@@ -60,11 +60,15 @@ class AsyncCoordinatorTest {
         sendThreeMessages(channel)
         channel.close()
         consumeJob.join()
-        coordinator - "server1"
-        coordinator - "server2"
+        coordinator - mock<Server> {
+            on(it.key) doReturn "server1"
+        }
+        coordinator - mock<Server> {
+            on(it.key) doReturn "server2"
+        }
         delay(100L)
 
-        // verify
+        // then
         verify(broker, times(2)).sendDownServer(anyOrNull())
         assertEquals(1, coordinator.serversCount)
     }
@@ -81,11 +85,13 @@ class AsyncCoordinatorTest {
         sendThreeMessages(channel)
         channel.close()
         consumeJob.join()
-        val sendingJob = coordinator - "server4"
+        val removed = coordinator - mock<Server> {
+            on(it.key) doReturn "server4"
+        }
         delay(100L)
 
-        // verify
-        assertNull(sendingJob)
+        // then
+        assertNull(removed)
         verify(broker, never()).sendDownServer(anyOrNull())
         assertEquals(3, coordinator.serversCount)
     }
@@ -105,7 +111,7 @@ class AsyncCoordinatorTest {
         assertTrue(scope.isActive)
         coordinator.close()
 
-        // verify
+        // then
         assertFalse(scope.isActive)
         assertEquals(3, coordinator.serversCount)
     }

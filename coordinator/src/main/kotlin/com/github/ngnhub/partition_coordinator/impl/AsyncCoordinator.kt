@@ -22,12 +22,12 @@ class AsyncCoordinator<K, S : Server>(
         }
     }
 
-    override fun minus(key: K): S? {
-        val removeServer = delegated - key
-        removeServer?.let {
-            scope.launch { serverBroker.sendDownServer(it) }
+    override fun minus(server: S): S? {
+        val removed = delegated - server
+        removed?.let {
+            serverBroker.sendDownServer(it)
         }
-        return removeServer
+        return removed
     }
 
     fun close() = scope.cancel()

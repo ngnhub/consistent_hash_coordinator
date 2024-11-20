@@ -126,9 +126,10 @@ class DefaultCoordinatorTest {
     }
 
     @Test
-    fun `should unlock when throws`() {
+    fun `should remove from hash and unlock when throws`() {
         // given
         whenever(consistentHashFunction.hash(anyOrNull())).thenThrow(RuntimeException::class.java)
+            .thenReturn(BigInteger.ONE)
         val server = mock<Server> {
             on(it.key) doReturn "key"
             on(it.health()) doReturn true
@@ -136,9 +137,10 @@ class DefaultCoordinatorTest {
         }
 
         // when
-        assertThrows<RuntimeException> {coordinator + server}
+        assertThrows<RuntimeException> { coordinator + server }
 
         // then
+        verify(consistentHashRing) - server.hash
         verify(lock).lock()
         verify(lock).unlock()
     }
@@ -196,11 +198,12 @@ class DefaultCoordinatorTest {
         assertEquals(1, coordinator.serversCount)
 
         // when
-        coordinator - key
+        val removed = coordinator - server1
 
         // then
         verify(consistentHashRing) - BigInteger.ONE
         assertEquals(0, coordinator.serversCount)
+        assertEquals(server1, removed)
     }
 
     @Test

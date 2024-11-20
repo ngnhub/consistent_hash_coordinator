@@ -18,7 +18,7 @@ class DefaultCoordinator<S : Server>(
     override val serversCount: Int
         get() = consistentHashRing.size
 
-    override fun plus(server: S) { // todo sync
+    override fun plus(server: S) {
         try {
             lock.lock()
             val newNodeHash = hashFunction.hash(server.key)
@@ -29,8 +29,8 @@ class DefaultCoordinator<S : Server>(
                     server.reDistribute(it, hashFunction)
                 }
             }
-        } catch (e: Exception) { //todo test
-            this - server.key
+        } catch (e: Exception) {
+            this - server
             throw e
         } finally {
             lock.unlock()
@@ -42,12 +42,12 @@ class DefaultCoordinator<S : Server>(
         return nextAvailableServer(hash) ?: throw NoAvailableSever()
     }
 
-    private fun nextAvailableServer(hash: BigInteger): S? { // fixme: too many calls
+    private fun nextAvailableServer(hash: BigInteger): S? {
         val nextAfter = consistentHashRing[hash] ?: return null
         if (nextAfter.health()) {
             return nextAfter
         }
-        this - nextAfter.key
+        this - nextAfter
         return nextAvailableServer(nextAfter.hash + BigInteger.ONE)
     }
 
@@ -55,8 +55,8 @@ class DefaultCoordinator<S : Server>(
         TODO("Not yet implemented")
     }
 
-    override fun minus(key: String): S? {
-        val hash = hashFunction.hash(key)
+    override fun minus(server: S): S? {
+        val hash = hashFunction.hash(server.key)
         return consistentHashRing - hash
     }
 }
