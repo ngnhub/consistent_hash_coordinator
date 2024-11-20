@@ -21,6 +21,7 @@ val slf4jVersion = "2.0.16"
 val loggerVersion = "7.0.0"
 val redisConnectorVersion = "5.2.0"
 val openAPIVersion = "2.6.0"
+val mockVersion = "5.4.0"
 
 repositories {
     mavenLocal()
@@ -49,6 +50,7 @@ dependencies {
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     testImplementation("com.github.codemonstur:embedded-redis:1.4.2")
+    testImplementation("org.mockito.kotlin:mockito-kotlin:$mockVersion")
 }
 
 kotlin {

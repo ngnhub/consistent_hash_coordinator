@@ -2,11 +2,11 @@ package com.github.ngnhub.redis_coordinator.service.impl
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.ngnhub.redis_coordinator.config.JedisServerStorageProperty
-import com.github.ngnhub.redis_coordinator.service.ServerStorage
 import com.github.ngnhub.redis_coordinator.model.RedisServerDto
+import com.github.ngnhub.redis_coordinator.service.ServerStorage
+import com.github.ngnhub.redis_coordinator.utils.readAll
 import org.springframework.stereotype.Service
 import redis.clients.jedis.JedisPool
-import redis.clients.jedis.params.ScanParams
 
 // todo: need smth more clever (like hearth bits?)
 @Service
@@ -17,23 +17,7 @@ class JedisServerStorage(
     private val jedisPool = JedisPool(jedisServerStorageProperty.host, jedisServerStorageProperty.port)
 
     override fun getAll(): List<RedisServerDto> {
-        val param = ScanParams().count(10)
-        val servers = mutableListOf<RedisServerDto>()
-        jedisPool.resource.use { jedis ->
-            var hasValues = true
-            var cursor = ScanParams.SCAN_POINTER_START
-            while (hasValues) {
-                val scan = jedis.scan(cursor, param)
-                if (scan.result.isNotEmpty()) {
-                    jedis.mget(*scan.result.toTypedArray()).asSequence()
-                        .map { server -> mapper.readValue(server.toString(), RedisServerDto::class.java) }
-                        .forEach { server -> servers.add(server) }
-                }
-                cursor = scan.cursor
-                hasValues = cursor != ScanParams.SCAN_POINTER_START
-            }
-        }
-        return servers
+        return readAll(jedisPool, 10) { mapper.readValue(it, RedisServerDto::class.java) }
     }
 
     override fun set(key: String, server: RedisServerDto) {

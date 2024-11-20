@@ -40,7 +40,6 @@ class RedisServer(
                 .filter { keyOfValue -> isHashInside(fromServerHash, hashFunction.hash(keyOfValue)) }
                 .toSet()
                 .toTypedArray()
-            // todo doesnt work with localhost need to run in a container
             fromServiceResource.migrate(host, port, timeout, migrateParams, *keysForMigration)
             // todo what if key is already removed
             cursor = scan.cursor
@@ -49,10 +48,7 @@ class RedisServer(
         }
     }
 
-    private fun isHashInside(
-        fromServerHash: BigInteger,
-        keyOfValueHash: BigInteger
-    ): Boolean {
+    private fun isHashInside(fromServerHash: BigInteger, keyOfValueHash: BigInteger): Boolean {
         if (hash > fromServerHash) {
             return keyOfValueHash > fromServerHash && keyOfValueHash <= hash
         }
