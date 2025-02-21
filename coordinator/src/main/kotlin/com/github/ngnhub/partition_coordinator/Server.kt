@@ -13,14 +13,13 @@ private val logger = KotlinLogging.logger {}
 abstract class Server(
     val host: String,
     val port: Int,
-    val key: String = host + port
+    val key: String = host + port,
+    val virtualNodesKeys: Set<String> = mutableSetOf()
 ) {
 
     open lateinit var hash: BigInteger
 
-    open fun health(): Boolean = defaultHealthCheck()
-
-    private fun defaultHealthCheck(): Boolean {
+    open fun health(): Boolean {
         Socket().use { socket ->
             try {
                 socket.connect(InetSocketAddress(host, port), CONNECTION_TIME_OUT);

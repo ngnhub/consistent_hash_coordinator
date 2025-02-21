@@ -21,23 +21,19 @@ class DefaultCoordinator<S : Server>(
     override fun plus(server: S) {
         try {
             lock.lock()
-            addServer(server)
+            val newNodeHash = hashFunction.hash(server.key)
+            server.hash = newNodeHash
+            consistentHashRing[newNodeHash] = server
+            nextAvailableServer(newNodeHash + BigInteger.ONE)?.let {
+                if (server.key != it.key) {
+                    server.reDistribute(it, hashFunction)
+                }
+            }
         } catch (e: Exception) {
-            this - server
+            this - server.key
             throw e
         } finally {
             lock.unlock()
-        }
-    }
-
-    private fun addServer(server: S) {
-        val newNodeHash = hashFunction.hash(server.key)
-        server.hash = newNodeHash
-        consistentHashRing[newNodeHash] = server
-        nextAvailableServer(newNodeHash + BigInteger.ONE)?.let {
-            if (server.key != it.key) {
-                server.reDistribute(it, hashFunction)
-            }
         }
     }
 
@@ -51,7 +47,7 @@ class DefaultCoordinator<S : Server>(
         if (nextAfter.health()) {
             return nextAfter
         }
-        this - nextAfter
+        this - nextAfter.key
         return nextAvailableServer(nextAfter.hash + BigInteger.ONE)
     }
 
@@ -60,8 +56,8 @@ class DefaultCoordinator<S : Server>(
         throw UnsupportedOperationException("Not yet implemented")
     }
 
-    override fun minus(server: S): S? {
-        val hash = hashFunction.hash(server.key)
+    override fun minus(key: String): S? {
+        val hash = hashFunction.hash(key)
         return consistentHashRing - hash
     }
 }
