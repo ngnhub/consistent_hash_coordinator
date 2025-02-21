@@ -11,7 +11,6 @@ class ServerController(val serverStorageService: ServerStorageService, val serve
     @PostMapping("/server")
     fun addServer(@RequestBody server: RedisServerDto) = serverStorageService.addServer(server)
 
-
     @GetMapping("/server/{host}/{port}")
     fun isAlive(@PathVariable host: String, @PathVariable port: Int) = serverStorageService.isAlive(host, port)
 

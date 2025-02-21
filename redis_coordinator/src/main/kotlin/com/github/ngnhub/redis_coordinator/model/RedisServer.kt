@@ -35,7 +35,7 @@ class RedisServer(
         while (hasValue) {
             val scan = fromServiceResource.scan(cursor, ScanParams().count(redistributePageSize))
             val migrateParams = MigrateParams()
-            val timeout = 3000 // todo: how to chose? how to handle if timed out
+            val timeout = 3000 // todo: magic number.. how to chose? how to handle if it timed out
             val keysForMigration = scan.result.asSequence()
                 .filter { keyOfValue -> isHashInside(fromServerHash, hashFunction.hash(keyOfValue)) }
                 .toSet()

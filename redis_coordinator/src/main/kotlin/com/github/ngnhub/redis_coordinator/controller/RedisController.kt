@@ -12,7 +12,7 @@ class RedisController(val redisOperationsService: RedisOperationsService) {
     }
 
     @PostMapping("/{key}")
-    fun addValue(@PathVariable key: String, @RequestBody body: String) {
-        redisOperationsService[key] = body
+    fun addValue(@PathVariable key: String, @RequestBody value: String) {
+        redisOperationsService[key] = value
     }
 }
