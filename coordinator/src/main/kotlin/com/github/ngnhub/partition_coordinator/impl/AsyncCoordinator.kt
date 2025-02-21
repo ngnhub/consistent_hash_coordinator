@@ -8,6 +8,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 
+//todo: does it really need? adding a server is not so frequent operation. to simplify
 class AsyncCoordinator<K, S : Server>(
     private val delegated: Coordinator<K, S>,
     private val serverBroker: ServerBroker<S>,
@@ -15,8 +16,7 @@ class AsyncCoordinator<K, S : Server>(
 ) : Coordinator<K, S> by delegated {
 
     fun startListening() = scope.launch {
-        val channel = serverBroker
-            .subscribeOnNewServers()
+        val channel = serverBroker.subscribeOnNewServers()
         for (server in channel) {
             delegated + server
         }
