@@ -18,7 +18,7 @@ class DefaultCoordinator<S : Server>(
     override val serversCount: Int
         get() = consistentHashRing.size
 
-    override fun plus(server: S) {
+    override fun plus(server: S) { //todo: put instead plus?
         try {
             lock.lock()
             val newNodeHash = hashFunction.hash(server.key)
@@ -52,7 +52,8 @@ class DefaultCoordinator<S : Server>(
     }
 
     override fun addVirtualNodes(vararg virtualNodes: S, sourceNode: S) {
-        TODO("Not yet implemented")
+//        TODO("Not yet implemented")
+        throw UnsupportedOperationException("Not yet implemented")
     }
 
     override fun minus(key: String): S? {
