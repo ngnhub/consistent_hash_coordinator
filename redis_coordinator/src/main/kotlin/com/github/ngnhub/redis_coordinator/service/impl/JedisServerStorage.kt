@@ -22,8 +22,7 @@ class JedisServerStorage(
 
     override fun set(key: String, server: RedisServerDto) {
         jedisPool.resource.use { jedis ->
-            val value = RedisServerDto(server.host, server.port, server.redistributePageSize)
-            jedis.set(key, mapper.writeValueAsString(value))
+            jedis.set(key, mapper.writeValueAsString(server))
         }
     }
 

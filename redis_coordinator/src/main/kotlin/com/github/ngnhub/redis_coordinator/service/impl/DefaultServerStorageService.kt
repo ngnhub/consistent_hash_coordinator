@@ -5,6 +5,7 @@ import com.github.ngnhub.redis_coordinator.model.RedisServer
 import com.github.ngnhub.redis_coordinator.model.RedisServerDto
 import com.github.ngnhub.redis_coordinator.service.ServerStorage
 import com.github.ngnhub.redis_coordinator.service.ServerStorageService
+import com.github.ngnhub.redis_coordinator.utils.toServer
 import jakarta.annotation.PostConstruct
 import org.springframework.stereotype.Service
 
@@ -20,9 +21,9 @@ class DefaultServerStorageService(
     }
 
     override fun addServer(redisServerDto: RedisServerDto) {
-        val server = RedisServer(redisServerDto.host, redisServerDto.port, redisServerDto.redistributePageSize)
+        val server = redisServerDto.toServer()
         coordinator + server
-        serverStorage[server.key] = RedisServerDto(server.host, server.port, server.redistributePageSize)
+        serverStorage[server.key] = redisServerDto
     }
 
     override fun get(key: String): RedisServer {
@@ -36,7 +37,7 @@ class DefaultServerStorageService(
 
     override fun isAlive(host: String, port: Int): Boolean {
         serverStorage[host + port]?.let {
-            return RedisServer(it.host, it.port, it.redistributePageSize).health()
+            return this[host + port].health()
         }
         return false
     }
