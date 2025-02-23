@@ -5,22 +5,19 @@ import com.github.ngnhub.redis_coordinator.model.RedisServer
 import com.github.ngnhub.redis_coordinator.model.RedisServerDto
 import com.github.ngnhub.redis_coordinator.service.ServerStorage
 import com.github.ngnhub.redis_coordinator.service.ServerStorageService
-import com.github.ngnhub.redis_coordinator.utils.DEFAULT_PROFILE
 import com.github.ngnhub.redis_coordinator.utils.toServer
 import jakarta.annotation.PostConstruct
-import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 
 @Service
-@Profile(DEFAULT_PROFILE)
 class DefaultServerStorageService(
     private val coordinator: DefaultCoordinator<RedisServer>,
-    private val serverStorage: ServerStorage<RedisServerDto>
-) : ServerStorageService<RedisServer, RedisServerDto> {
+    private val serverStorage: ServerStorage
+) : ServerStorageService {
 
     @PostConstruct
     fun init() {
-        serverStorage.getAll(RedisServerDto::class.java).forEach { addServer(it) }
+        serverStorage.getAll().forEach { addServer(it) }
     }
 
     override fun addServer(redisServerDto: RedisServerDto) {
@@ -39,7 +36,7 @@ class DefaultServerStorageService(
     }
 
     override fun isAlive(host: String, port: Int): Boolean {
-        serverStorage[host + port, RedisServerDto::class.java]?.let {
+        serverStorage[host + port]?.let {
             return this[host + port].health()
         }
         return false

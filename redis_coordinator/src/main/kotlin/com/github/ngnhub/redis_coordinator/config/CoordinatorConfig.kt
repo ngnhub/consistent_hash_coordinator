@@ -2,7 +2,6 @@ package com.github.ngnhub.redis_coordinator.config
 
 import com.github.ngnhub.partition_coordinator.impl.DefaultCoordinator
 import com.github.ngnhub.redis_coordinator.model.RedisServer
-import com.github.ngnhub.redis_coordinator.model.VPCRedisServer
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
@@ -10,8 +9,5 @@ import org.springframework.context.annotation.Configuration
 class CoordinatorConfig {
 
     @Bean
-    fun defaultCoordinator() = DefaultCoordinator<RedisServer>()
-
-    @Bean
-    fun vpcCoordinator() = DefaultCoordinator<VPCRedisServer>()
+    fun coordinator() = DefaultCoordinator<RedisServer>()
 }

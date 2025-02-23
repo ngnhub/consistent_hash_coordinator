@@ -1,12 +1,14 @@
 package com.github.ngnhub.redis_coordinator.service
 
-interface ServerStorage<T> {
+import com.github.ngnhub.redis_coordinator.model.RedisServerDto
 
-    fun getAll(type: Class<T>): List<T>
+interface ServerStorage {
 
-    operator fun set(key: String, server: T)
+    fun getAll(): List<RedisServerDto>
+
+    operator fun set(key: String, server: RedisServerDto)
 
     operator fun minus(key: String)
 
-    operator fun get(key: String, type: Class<T>): T?
+    operator fun get(key: String): RedisServerDto?
 }

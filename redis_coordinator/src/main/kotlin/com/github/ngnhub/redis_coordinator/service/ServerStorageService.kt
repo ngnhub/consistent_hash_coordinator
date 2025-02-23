@@ -1,12 +1,13 @@
 package com.github.ngnhub.redis_coordinator.service
 
 import com.github.ngnhub.redis_coordinator.model.RedisServer
+import com.github.ngnhub.redis_coordinator.model.RedisServerDto
 
-interface ServerStorageService<S : RedisServer, D> {
+interface ServerStorageService {
 
-    fun addServer(redisServerDto: D)
+    fun addServer(redisServerDto: RedisServerDto)
 
-    operator fun get(key: String): S
+    operator fun get(key: String): RedisServer
 
     operator fun minus(key: String)
 
