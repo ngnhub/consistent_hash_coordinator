@@ -19,7 +19,7 @@ abstract class Server(
 
     open lateinit var hash: BigInteger
 
-    open fun health(): Boolean = defaultHealthCheck()
+    open fun health(): Boolean = defaultHealthCheck() // todo: 'is' convention
 
     private fun defaultHealthCheck(): Boolean {
         Socket().use { socket ->
@@ -34,5 +34,7 @@ abstract class Server(
     }
 
     abstract fun reDistribute(from: Server, by: HashFunction<String>)
+
+    abstract fun moveEverything(to: Server)
     //todo how the type can be restricted by the generic??
 }

@@ -15,32 +15,51 @@ val logger = KotlinLogging.logger {}
 class RedisServer(
     host: String,
     port: Int,
+    val privateHost: String = host,
+    val privatePort: Int = port,
     val redistributePageSize: Int,
-    val redisPool: JedisPool = JedisPool(JedisPoolConfig(), host, port) // todo async lib
+    val redisPool: JedisPool = JedisPool(JedisPoolConfig(), host, port)
 ) : Server(host, port) {
+
+
+    companion object {
+        const val TIMEOUT = 3000
+    }
+
+    override fun moveEverything(to: Server) {
+        val redisServer = to as RedisServer
+        redisPool.resource.use { migrate(it, redisServer) }
+    }
+
+    private fun migrate(from: Jedis, to: RedisServer) {
+        var cursor = ScanParams.SCAN_POINTER_START
+        var hasValue = true
+        while (hasValue) {
+            val scan = from.scan(cursor, ScanParams().count(redistributePageSize))
+            val keysForMigration = scan.result.toTypedArray()
+            from.migrate(to.privateHost, to.privatePort, TIMEOUT, MigrateParams(), *keysForMigration)
+            // todo what if key is already removed
+            cursor = scan.cursor
+            hasValue = cursor != ScanParams.SCAN_POINTER_START
+            logger.info { "Moved everything to ${to.key}" }
+        }
+    }
 
     override fun reDistribute(from: Server, by: HashFunction<String>) {
         val redisServer = from as RedisServer
-        redisServer.redisPool.resource.use { resource -> migrateBatched(by, resource, from.hash) }
+        redisServer.redisPool.resource.use { migrate(by, it, from.hash) }
     }
 
-    private fun migrateBatched(
-        hashFunction: HashFunction<String>,
-        fromServiceResource: Jedis,
-        fromServerHash: BigInteger
-    ) {
+    private fun migrate(hashFunction: HashFunction<String>, fromServiceResource: Jedis, fromServerHash: BigInteger) {
         var cursor = ScanParams.SCAN_POINTER_START
         var hasValue = true
-
         while (hasValue) {
             val scan = fromServiceResource.scan(cursor, ScanParams().count(redistributePageSize))
-            val migrateParams = MigrateParams()
-            val timeout = 3000 // todo: magic number.. how to chose? how to handle if it timed out
             val keysForMigration = scan.result.asSequence()
                 .filter { keyOfValue -> isHashInside(fromServerHash, hashFunction.hash(keyOfValue)) }
                 .toSet()
                 .toTypedArray()
-            fromServiceResource.migrate(host, port, timeout, migrateParams, *keysForMigration)
+            fromServiceResource.migrate(privateHost, privatePort, TIMEOUT, MigrateParams(), *keysForMigration)
             // todo what if key is already removed
             cursor = scan.cursor
             hasValue = cursor != ScanParams.SCAN_POINTER_START

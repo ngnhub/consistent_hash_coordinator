@@ -6,8 +6,11 @@ import com.github.ngnhub.consistent_hash.impl.MurmurHashFunction
 import com.github.ngnhub.partition_coordinator.Coordinator
 import com.github.ngnhub.partition_coordinator.Server
 import com.github.ngnhub.partition_coordinator.exception.NoAvailableSever
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.math.BigInteger
 import java.util.concurrent.locks.ReentrantLock
+
+val logger = KotlinLogging.logger {}
 
 class DefaultCoordinator<S : Server>(
     private val hashFunction: HashFunction<String> = MurmurHashFunction(),
@@ -18,7 +21,7 @@ class DefaultCoordinator<S : Server>(
     override val serversCount: Int
         get() = consistentHashRing.size
 
-    override fun plus(server: S) { //todo: put instead plus?
+    override fun plus(server: S) {
         try {
             lock.lock()
             val newNodeHash = hashFunction.hash(server.key)
@@ -58,6 +61,15 @@ class DefaultCoordinator<S : Server>(
 
     override fun minus(key: String): S? {
         val hash = hashFunction.hash(key)
+        consistentHashRing[hash]?.let {
+            if (it.health()) {
+                nextAvailableServer(hash + BigInteger.ONE)?.let { next ->
+                    it.moveEverything(next)
+                }
+            } else {
+                logger.info { "Removing server is not alive can not move data from it " }
+            }
+        }
         return consistentHashRing - hash
     }
 }

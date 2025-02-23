@@ -22,6 +22,7 @@ val loggerVersion = "7.0.0"
 val redisConnectorVersion = "5.2.0"
 val openAPIVersion = "2.6.0"
 val mockVersion = "5.4.0"
+val testcontainersVersion = "1.20.5"
 
 repositories {
     mavenLocal()
@@ -32,7 +33,7 @@ repositories {
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
-    implementation("redis.clients:jedis:$redisConnectorVersion") // todo version to var
+    implementation("redis.clients:jedis:$redisConnectorVersion")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
 
     // own
@@ -49,8 +50,8 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-    testImplementation("com.github.codemonstur:embedded-redis:1.4.2")
     testImplementation("org.mockito.kotlin:mockito-kotlin:$mockVersion")
+    testImplementation("org.testcontainers:junit-jupiter:$testcontainersVersion")
 }
 
 kotlin {

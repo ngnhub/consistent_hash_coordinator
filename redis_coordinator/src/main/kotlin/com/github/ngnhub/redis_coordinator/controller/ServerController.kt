@@ -17,6 +17,6 @@ class ServerController(val serverStorageService: ServerStorageService, val serve
     @GetMapping("/servers")
     fun getAll() = serverStorage.getAll()
 
-    @DeleteMapping("/servers/{host}/{port}")
+    @DeleteMapping("/server/{host}/{port}")
     fun remove(@PathVariable host: String, @PathVariable port: Int) = serverStorageService - (host + port)
 }

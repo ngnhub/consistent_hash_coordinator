@@ -185,24 +185,65 @@ class DefaultCoordinatorTest {
     }
 
     @Test
-    fun `should remove from consistent hash`() {
+    fun `should remove and redistribute from consistent hash if alive`() {
         // given
-        val key = "key"
+        val key1 = "key1"
         val server1 = mock<Server> {
-            on(it.key) doReturn key
+            on(it.key) doReturn key1
             on(it.health()) doReturn true
             on(it.hash) doReturn BigInteger.ONE
         }
-        whenever(consistentHashFunction.hash(key)).thenReturn(BigInteger.ONE)
+        val key2 = "key2"
+        val server2 = mock<Server> {
+            on(it.key) doReturn key2
+            on(it.health()) doReturn true
+            on(it.hash) doReturn BigInteger.ONE
+        }
+        whenever(consistentHashFunction.hash(key1)).thenReturn(BigInteger.ONE)
+        whenever(consistentHashFunction.hash(key2)).thenReturn(BigInteger.TWO)
         coordinator + server1
-        assertEquals(1, coordinator.serversCount)
+        coordinator + server2
+        assertEquals(2, coordinator.serversCount)
 
         // when
         val removed = coordinator - server1.key
 
         // then
         verify(consistentHashRing) - BigInteger.ONE
-        assertEquals(0, coordinator.serversCount)
+        verify(server1).moveEverything(server2)
+        assertEquals(1, coordinator.serversCount)
+        assertEquals(server1, removed)
+    }
+
+    @Test
+    fun `should remove but not redistribute from consistent hash if not alive`() {
+        // given
+        val key1 = "key1"
+        val server1 = mock<Server> {
+            on(it.key) doReturn key1
+            on(it.health()) doReturn true
+            on(it.hash) doReturn BigInteger.ONE
+        }
+        val key2 = "key2"
+        val server2 = mock<Server> {
+            on(it.key) doReturn key2
+            on(it.health()) doReturn true
+            on(it.hash) doReturn BigInteger.ONE
+        }
+        whenever(consistentHashFunction.hash(key1)).thenReturn(BigInteger.ONE)
+        whenever(consistentHashFunction.hash(key2)).thenReturn(BigInteger.TWO)
+        coordinator + server1
+        coordinator + server2
+        assertEquals(2, coordinator.serversCount)
+
+        // when
+        whenever(server1.health()).thenReturn(false)
+        val removed = coordinator - server1.key
+
+        // then
+        verify(consistentHashRing) - BigInteger.ONE
+        verify(server1, never()).moveEverything(any())
+        assertEquals(1, coordinator.serversCount)
         assertEquals(server1, removed)
     }
 

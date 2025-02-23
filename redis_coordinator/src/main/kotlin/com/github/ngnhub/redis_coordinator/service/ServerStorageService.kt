@@ -7,7 +7,7 @@ interface ServerStorageService {
 
     fun addServer(redisServerDto: RedisServerDto)
 
-    operator fun get(key: String): RedisServer
+    operator fun get(key: String): RedisServer // todo nullable
 
     operator fun minus(key: String)
 
