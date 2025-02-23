@@ -19,7 +19,7 @@ abstract class Server(
 
     open lateinit var hash: BigInteger
 
-    open fun health(): Boolean = defaultHealthCheck()
+    open fun health(): Boolean = defaultHealthCheck() // todo: 'is' convention
 
     private fun defaultHealthCheck(): Boolean {
         Socket().use { socket ->

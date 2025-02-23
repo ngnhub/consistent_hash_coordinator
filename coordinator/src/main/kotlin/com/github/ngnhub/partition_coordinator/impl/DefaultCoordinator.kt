@@ -58,6 +58,11 @@ class DefaultCoordinator<S : Server>(
 
     override fun minus(key: String): S? {
         val hash = hashFunction.hash(key)
+        consistentHashRing[hash]?.let {
+            if (it.health()) {
+                nextAvailableServer(hash + BigInteger.ONE)?.reDistribute(it, hashFunction)
+            }
+        }
         return consistentHashRing - hash
     }
 }
