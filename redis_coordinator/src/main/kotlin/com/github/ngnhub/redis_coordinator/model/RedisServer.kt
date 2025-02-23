@@ -15,6 +15,8 @@ val logger = KotlinLogging.logger {}
 class RedisServer(
     host: String,
     port: Int,
+    val privateHost: String = host,
+    val privatePort: Int = port,
     val redistributePageSize: Int,
     val redisPool: JedisPool = JedisPool(JedisPoolConfig(), host, port) // todo async lib
 ) : Server(host, port) {
@@ -40,7 +42,7 @@ class RedisServer(
                 .filter { keyOfValue -> isHashInside(fromServerHash, hashFunction.hash(keyOfValue)) }
                 .toSet()
                 .toTypedArray()
-            fromServiceResource.migrate(host, port, timeout, migrateParams, *keysForMigration)
+            fromServiceResource.migrate(privateHost, privatePort, timeout, migrateParams, *keysForMigration)
             // todo what if key is already removed
             cursor = scan.cursor
             hasValue = cursor != ScanParams.SCAN_POINTER_START
