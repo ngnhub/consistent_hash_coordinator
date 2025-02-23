@@ -3,28 +3,38 @@ package com.github.ngnhub.redis_coordinator.service.impl
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.ngnhub.consistent_hash.HashFunction
 import com.github.ngnhub.redis_coordinator.model.RedisServerDto
+import com.github.ngnhub.redis_coordinator.service.ServerStorageService
+import com.github.ngnhub.redis_coordinator.service.impl.config.TestRedisOperationConfig
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.mock.mockito.MockBean
+import org.springframework.context.annotation.Import
 import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
 import org.testcontainers.containers.GenericContainer
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
 import org.testcontainers.utility.DockerImageName
+import redis.clients.jedis.JedisPool
 import java.math.BigInteger
 
+@Import(TestRedisOperationConfig::class)
 @Testcontainers
-@SpringBootTest
+@SpringBootTest(
+    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+)
 class RedisTestContainersBaseClass {
 
     @Autowired
     protected lateinit var mapper: ObjectMapper
 
-    @MockBean
+    @Autowired
     protected lateinit var mockedHashFunction: HashFunction<String>
+
+    @Autowired
+    protected lateinit var serverStorageService: ServerStorageService
 
     companion object {
 
@@ -84,5 +94,16 @@ class RedisTestContainersBaseClass {
         whenever(mockedHashFunction.hash(KEY_5)).thenReturn(BigInteger.valueOf(5))
         whenever(mockedHashFunction.hash(KEY_7)).thenReturn(BigInteger.valueOf(7))
         whenever(mockedHashFunction.hash(KEY_8)).thenReturn(BigInteger.valueOf(8))
+    }
+
+    @AfterEach
+    fun tearDown() {
+        JedisPool(REDIS_1.host, REDIS_1.firstMappedPort).resource.use { it.flushAll() }
+        JedisPool(REDIS_2.host, REDIS_2.firstMappedPort).resource.use { it.flushAll() }
+        JedisPool(REDIS_3.host, REDIS_3.firstMappedPort).resource.use { it.flushAll() }
+
+        serverStorageService - (REDIS_1.host + REDIS_1.firstMappedPort)
+        serverStorageService - (REDIS_2.host + REDIS_2.firstMappedPort)
+        serverStorageService - (REDIS_3.host + REDIS_3.firstMappedPort)
     }
 }
