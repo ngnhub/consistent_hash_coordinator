@@ -3,6 +3,8 @@ package com.github.ngnhub.redis_coordinator.utils
 import redis.clients.jedis.JedisPool
 import redis.clients.jedis.params.ScanParams
 
+const val MIGRATION_TIMEOUT = 3000 // todo: how to chose? how to handle if it timed out
+
 fun <T : Any> readAll(pool: JedisPool, pageSize: Int, convertFunction: (origin: String) -> T): List<T> {
     val param = ScanParams().count(pageSize)
     val result = mutableListOf<T>()

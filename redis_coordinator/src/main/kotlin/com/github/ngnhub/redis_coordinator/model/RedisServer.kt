@@ -2,6 +2,7 @@ package com.github.ngnhub.redis_coordinator.model
 
 import com.github.ngnhub.consistent_hash.HashFunction
 import com.github.ngnhub.partition_coordinator.Server
+import com.github.ngnhub.redis_coordinator.utils.MIGRATION_TIMEOUT
 import io.github.oshai.kotlinlogging.KotlinLogging
 import redis.clients.jedis.Jedis
 import redis.clients.jedis.JedisPool
@@ -12,7 +13,7 @@ import java.math.BigInteger
 
 val logger = KotlinLogging.logger {}
 
-class RedisServer(
+open class RedisServer(
     host: String,
     port: Int,
     val redistributePageSize: Int,
@@ -35,17 +36,24 @@ class RedisServer(
         while (hasValue) {
             val scan = fromServiceResource.scan(cursor, ScanParams().count(redistributePageSize))
             val migrateParams = MigrateParams()
-            val timeout = 3000 // todo: magic number.. how to chose? how to handle if it timed out
             val keysForMigration = scan.result.asSequence()
                 .filter { keyOfValue -> isHashInside(fromServerHash, hashFunction.hash(keyOfValue)) }
                 .toSet()
                 .toTypedArray()
-            fromServiceResource.migrate(host, port, timeout, migrateParams, *keysForMigration)
+            migrate(fromServiceResource, migrateParams, keysForMigration)
             // todo what if key is already removed
             cursor = scan.cursor
             hasValue = cursor != ScanParams.SCAN_POINTER_START
             logger.info { "Migrated ${scan.result.size}" }
         }
+    }
+
+    protected open fun migrate(
+        fromServiceResource: Jedis,
+        migrateParams: MigrateParams,
+        keysForMigration: Array<String>
+    ) {
+        fromServiceResource.migrate(host, port, MIGRATION_TIMEOUT, migrateParams, *keysForMigration)
     }
 
     private fun isHashInside(fromServerHash: BigInteger, keyOfValueHash: BigInteger): Boolean {
