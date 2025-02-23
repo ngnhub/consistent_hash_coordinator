@@ -38,7 +38,6 @@ class RedisCoordinatorIntegrationTest : RedisTestContainersBaseClass() {
         serverContainsValues(REDIS_3, setOf(VALUE_7, VALUE_8))
     }
 
-    //    @Disabled("redistribution logic for deleting is not implemented")
     @Test
     fun `should redistribute values when server is removed`() {
         serverAdded(REDIS_1)

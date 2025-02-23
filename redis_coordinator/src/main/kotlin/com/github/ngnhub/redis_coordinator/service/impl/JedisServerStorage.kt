@@ -8,7 +8,6 @@ import com.github.ngnhub.redis_coordinator.utils.readAll
 import org.springframework.stereotype.Service
 import redis.clients.jedis.JedisPool
 
-// todo: need smth more clever (like hearth bits?)
 @Service
 class JedisServerStorage(
     jedisServerStorageProperty: JedisServerStorageProperty,
