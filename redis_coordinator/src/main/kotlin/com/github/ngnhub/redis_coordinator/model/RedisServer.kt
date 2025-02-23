@@ -18,20 +18,20 @@ class RedisServer(
     val privateHost: String = host,
     val privatePort: Int = port,
     val redistributePageSize: Int,
-    val redisPool: JedisPool = JedisPool(JedisPoolConfig(), host, port) // todo async lib
+    val redisPool: JedisPool = JedisPool(JedisPoolConfig(), host, port)
 ) : Server(host, port) {
 
 
     companion object {
-        const val TIMEOUT = 3000 // todo: magic number.. how to chose? how to handle if it timed out
+        const val TIMEOUT = 3000
     }
 
     override fun moveEverything(to: Server) {
         val redisServer = to as RedisServer
-        redisPool.resource.use { migrateBatched(it, redisServer) }
+        redisPool.resource.use { migrate(it, redisServer) }
     }
 
-    private fun migrateBatched(from: Jedis, to: RedisServer) {
+    private fun migrate(from: Jedis, to: RedisServer) {
         var cursor = ScanParams.SCAN_POINTER_START
         var hasValue = true
         while (hasValue) {
@@ -47,14 +47,10 @@ class RedisServer(
 
     override fun reDistribute(from: Server, by: HashFunction<String>) {
         val redisServer = from as RedisServer
-        redisServer.redisPool.resource.use { migrateBatched(by, it, from.hash) }
+        redisServer.redisPool.resource.use { migrate(by, it, from.hash) }
     }
 
-    private fun migrateBatched(
-        hashFunction: HashFunction<String>,
-        fromServiceResource: Jedis,
-        fromServerHash: BigInteger
-    ) {
+    private fun migrate(hashFunction: HashFunction<String>, fromServiceResource: Jedis, fromServerHash: BigInteger) {
         var cursor = ScanParams.SCAN_POINTER_START
         var hasValue = true
         while (hasValue) {
