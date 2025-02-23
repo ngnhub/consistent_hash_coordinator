@@ -210,7 +210,7 @@ class DefaultCoordinatorTest {
 
         // then
         verify(consistentHashRing) - BigInteger.ONE
-        verify(server2, times(2)).reDistribute(server1, consistentHashFunction)
+        verify(server1).moveEverything(server2)
         assertEquals(1, coordinator.serversCount)
         assertEquals(server1, removed)
     }
@@ -242,7 +242,7 @@ class DefaultCoordinatorTest {
 
         // then
         verify(consistentHashRing) - BigInteger.ONE
-        verify(server2).reDistribute(server1, consistentHashFunction)
+        verify(server1, never()).moveEverything(any())
         assertEquals(1, coordinator.serversCount)
         assertEquals(server1, removed)
     }

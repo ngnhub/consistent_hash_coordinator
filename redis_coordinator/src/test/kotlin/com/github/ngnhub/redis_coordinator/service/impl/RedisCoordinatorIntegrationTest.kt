@@ -1,6 +1,5 @@
 package com.github.ngnhub.redis_coordinator.service.impl
 
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
@@ -39,7 +38,7 @@ class RedisCoordinatorIntegrationTest : RedisTestContainersBaseClass() {
         serverContainsValues(REDIS_3, setOf(VALUE_7, VALUE_8))
     }
 
-    @Disabled("redistribution logic for deleting is not implemented")
+    //    @Disabled("redistribution logic for deleting is not implemented")
     @Test
     fun `should redistribute values when server is removed`() {
         serverAdded(REDIS_1)
@@ -59,7 +58,11 @@ class RedisCoordinatorIntegrationTest : RedisTestContainersBaseClass() {
         serverStatusIs(REDIS_2, false)
 
         serverContainsValues(REDIS_1, setOf(VALUE_1))
-        serverContainsValues(REDIS_2, setOf(VALUE_3, VALUE_5, VALUE_7, VALUE_8))
+        serverContainsValues(REDIS_3, setOf(VALUE_3, VALUE_5, VALUE_7, VALUE_8))
+
+        serverRemoved(REDIS_3)
+        serverStatusIs(REDIS_3, false)
+        serverContainsValues(REDIS_1, setOf(VALUE_1, VALUE_3, VALUE_5, VALUE_7, VALUE_8))
     }
 
     private fun addAllValues() {

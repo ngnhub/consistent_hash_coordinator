@@ -21,9 +21,33 @@ class RedisServer(
     val redisPool: JedisPool = JedisPool(JedisPoolConfig(), host, port) // todo async lib
 ) : Server(host, port) {
 
+
+    companion object {
+        const val TIMEOUT = 3000 // todo: magic number.. how to chose? how to handle if it timed out
+    }
+
+    override fun moveEverything(to: Server) {
+        val redisServer = to as RedisServer
+        redisPool.resource.use { migrateBatched(it, redisServer) }
+    }
+
+    private fun migrateBatched(from: Jedis, to: RedisServer) {
+        var cursor = ScanParams.SCAN_POINTER_START
+        var hasValue = true
+        while (hasValue) {
+            val scan = from.scan(cursor, ScanParams().count(redistributePageSize))
+            val keysForMigration = scan.result.toTypedArray()
+            from.migrate(to.privateHost, to.privatePort, TIMEOUT, MigrateParams(), *keysForMigration)
+            // todo what if key is already removed
+            cursor = scan.cursor
+            hasValue = cursor != ScanParams.SCAN_POINTER_START
+            logger.info { "Moved everything to ${to.key}" }
+        }
+    }
+
     override fun reDistribute(from: Server, by: HashFunction<String>) {
         val redisServer = from as RedisServer
-        redisServer.redisPool.resource.use { resource -> migrateBatched(by, resource, from.hash) }
+        redisServer.redisPool.resource.use { migrateBatched(by, it, from.hash) }
     }
 
     private fun migrateBatched(
@@ -33,16 +57,13 @@ class RedisServer(
     ) {
         var cursor = ScanParams.SCAN_POINTER_START
         var hasValue = true
-
         while (hasValue) {
             val scan = fromServiceResource.scan(cursor, ScanParams().count(redistributePageSize))
-            val migrateParams = MigrateParams()
-            val timeout = 3000 // todo: magic number.. how to chose? how to handle if it timed out
             val keysForMigration = scan.result.asSequence()
                 .filter { keyOfValue -> isHashInside(fromServerHash, hashFunction.hash(keyOfValue)) }
                 .toSet()
                 .toTypedArray()
-            fromServiceResource.migrate(privateHost, privatePort, timeout, migrateParams, *keysForMigration)
+            fromServiceResource.migrate(privateHost, privatePort, TIMEOUT, MigrateParams(), *keysForMigration)
             // todo what if key is already removed
             cursor = scan.cursor
             hasValue = cursor != ScanParams.SCAN_POINTER_START
