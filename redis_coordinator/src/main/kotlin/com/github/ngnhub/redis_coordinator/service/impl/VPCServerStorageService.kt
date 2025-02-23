@@ -1,35 +1,35 @@
 package com.github.ngnhub.redis_coordinator.service.impl
 
 import com.github.ngnhub.partition_coordinator.impl.DefaultCoordinator
-import com.github.ngnhub.redis_coordinator.model.RedisServer
-import com.github.ngnhub.redis_coordinator.model.RedisServerDto
+import com.github.ngnhub.redis_coordinator.model.VPCRedisServer
+import com.github.ngnhub.redis_coordinator.model.VPCRedisServerDto
 import com.github.ngnhub.redis_coordinator.service.ServerStorage
 import com.github.ngnhub.redis_coordinator.service.ServerStorageService
-import com.github.ngnhub.redis_coordinator.utils.DEFAULT_PROFILE
+import com.github.ngnhub.redis_coordinator.utils.VPC_PROFILE
 import com.github.ngnhub.redis_coordinator.utils.toServer
 import jakarta.annotation.PostConstruct
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 
 @Service
-@Profile(DEFAULT_PROFILE)
-class DefaultServerStorageService(
-    private val coordinator: DefaultCoordinator<RedisServer>,
-    private val serverStorage: ServerStorage<RedisServerDto>
-) : ServerStorageService<RedisServer, RedisServerDto> {
+@Profile(VPC_PROFILE)
+class VPCServerStorageService(
+    val coordinator: DefaultCoordinator<VPCRedisServer>,
+    val serverStorage: ServerStorage<VPCRedisServerDto>
+) : ServerStorageService<VPCRedisServer, VPCRedisServerDto> {
 
     @PostConstruct
     fun init() {
-        serverStorage.getAll(RedisServerDto::class.java).forEach { addServer(it) }
+        serverStorage.getAll(VPCRedisServerDto::class.java).forEach { addServer(it) }
     }
 
-    override fun addServer(redisServerDto: RedisServerDto) {
+    override fun addServer(redisServerDto: VPCRedisServerDto) {
         val server = redisServerDto.toServer()
         coordinator + server
         serverStorage[server.key] = redisServerDto
     }
 
-    override fun get(key: String): RedisServer {
+    override fun get(key: String): VPCRedisServer {
         return coordinator[key]
     }
 
@@ -39,7 +39,7 @@ class DefaultServerStorageService(
     }
 
     override fun isAlive(host: String, port: Int): Boolean {
-        serverStorage[host + port, RedisServerDto::class.java]?.let {
+        serverStorage[host + port, VPCRedisServerDto::class.java]?.let {
             return this[host + port].health()
         }
         return false
