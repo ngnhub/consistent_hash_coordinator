@@ -34,5 +34,7 @@ abstract class Server(
     }
 
     abstract fun reDistribute(from: Server, by: HashFunction<String>)
+
+    abstract fun moveEverything(to: Server)
     //todo how the type can be restricted by the generic??
 }

@@ -60,7 +60,9 @@ class DefaultCoordinator<S : Server>(
         val hash = hashFunction.hash(key)
         consistentHashRing[hash]?.let {
             if (it.health()) {
-                nextAvailableServer(hash + BigInteger.ONE)?.reDistribute(it, hashFunction)
+                nextAvailableServer(hash + BigInteger.ONE)?.let { next ->
+                    it.moveEverything(next)
+                }
             }
         }
         return consistentHashRing - hash
