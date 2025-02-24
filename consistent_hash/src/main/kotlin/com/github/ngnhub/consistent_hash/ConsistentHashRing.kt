@@ -1,11 +1,8 @@
 package com.github.ngnhub.consistent_hash
 
 import com.github.ngnhub.consistent_hash.exception.CollisionException
-import io.github.oshai.kotlinlogging.KotlinLogging
 import java.math.BigInteger
 import java.util.concurrent.ConcurrentSkipListMap
-
-private val logger = KotlinLogging.logger {}
 
 class ConsistentHashRing<V> {
 
@@ -25,7 +22,6 @@ class ConsistentHashRing<V> {
         if (map.containsKey(key)) {
             throw CollisionException("Collision has occurred for key $key. The key must be modified")
         }
-        logger.debug { "Put '$value' at key '$key'" }
         map[key] = value
     }
 

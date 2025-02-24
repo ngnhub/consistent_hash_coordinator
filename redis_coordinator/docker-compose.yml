@@ -62,7 +62,7 @@ services:
     networks:
       - redis-network
 
-  server_storage: #todo better ideas?
+  server_storage:
     container_name: server_storage
     hostname: server_storage
     image: redis:latest

@@ -38,10 +38,6 @@ repositories {
 dependencies {
     implementation("com.google.guava:guava:$guavaVersion")
 
-    // logging
-    implementation("org.slf4j:slf4j-api:$slf4jVersion")
-    implementation("io.github.oshai:kotlin-logging-jvm:$loggerVersion")
-
     testImplementation("io.mockk:mockk:${mockkVersion}")
     testImplementation("org.junit.jupiter:junit-jupiter-params:$paramTestVersion")
     testImplementation(kotlin("test"))

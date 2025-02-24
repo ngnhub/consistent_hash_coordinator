@@ -3,7 +3,7 @@ package com.github.ngnhub.redis_coordinator.service.impl
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.ngnhub.consistent_hash.HashFunction
 import com.github.ngnhub.redis_coordinator.model.RedisServerDto
-import com.github.ngnhub.redis_coordinator.service.ServerStorageService
+import com.github.ngnhub.redis_coordinator.service.ServerSearchService
 import com.github.ngnhub.redis_coordinator.service.impl.config.TestRedisOperationConfig
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -34,7 +34,7 @@ class RedisTestContainersBaseClass {
     protected lateinit var mockedHashFunction: HashFunction<String>
 
     @Autowired
-    protected lateinit var serverStorageService: ServerStorageService
+    protected lateinit var serverStorageService: ServerSearchService
 
     companion object {
 

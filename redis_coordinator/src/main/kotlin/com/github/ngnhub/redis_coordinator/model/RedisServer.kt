@@ -10,6 +10,8 @@ import redis.clients.jedis.params.MigrateParams
 import redis.clients.jedis.params.ScanParams
 import java.math.BigInteger
 
+const val TIMEOUT = 3000
+
 val logger = KotlinLogging.logger {}
 
 class RedisServer(
@@ -20,11 +22,6 @@ class RedisServer(
     val redistributePageSize: Int,
     val redisPool: JedisPool = JedisPool(JedisPoolConfig(), host, port)
 ) : Server(host, port) {
-
-
-    companion object {
-        const val TIMEOUT = 3000
-    }
 
     override fun moveEverything(to: Server) {
         val redisServer = to as RedisServer
@@ -38,32 +35,32 @@ class RedisServer(
             val scan = from.scan(cursor, ScanParams().count(redistributePageSize))
             val keysForMigration = scan.result.toTypedArray()
             from.migrate(to.privateHost, to.privatePort, TIMEOUT, MigrateParams(), *keysForMigration)
-            // todo what if key is already removed
+            // todo what if keys are already removed
             cursor = scan.cursor
             hasValue = cursor != ScanParams.SCAN_POINTER_START
-            logger.info { "Moved everything to ${to.key}" }
+            logger.info { "Moved data to ${to.key}" }
         }
     }
 
     override fun reDistribute(from: Server, by: HashFunction<String>) {
         val redisServer = from as RedisServer
-        redisServer.redisPool.resource.use { migrate(by, it, from.hash) }
+        redisServer.redisPool.resource.use { migrate(it, from.hash, by) }
     }
 
-    private fun migrate(hashFunction: HashFunction<String>, fromServiceResource: Jedis, fromServerHash: BigInteger) {
+    private fun migrate(from: Jedis, fromServerHash: BigInteger, hashFunction: HashFunction<String>) {
         var cursor = ScanParams.SCAN_POINTER_START
         var hasValue = true
         while (hasValue) {
-            val scan = fromServiceResource.scan(cursor, ScanParams().count(redistributePageSize))
+            val scan = from.scan(cursor, ScanParams().count(redistributePageSize))
             val keysForMigration = scan.result.asSequence()
                 .filter { keyOfValue -> isHashInside(fromServerHash, hashFunction.hash(keyOfValue)) }
                 .toSet()
                 .toTypedArray()
-            fromServiceResource.migrate(privateHost, privatePort, TIMEOUT, MigrateParams(), *keysForMigration)
-            // todo what if key is already removed
+            from.migrate(privateHost, privatePort, TIMEOUT, MigrateParams(), *keysForMigration)
+            // todo what if keys are already removed
             cursor = scan.cursor
             hasValue = cursor != ScanParams.SCAN_POINTER_START
-            logger.info { "Migrated ${scan.result.size}" }
+            logger.info { "Migrated data to ${scan.result.size}" }
         }
     }
 

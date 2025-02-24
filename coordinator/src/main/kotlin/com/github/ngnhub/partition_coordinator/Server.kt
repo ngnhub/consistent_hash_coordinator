@@ -8,6 +8,7 @@ import java.net.InetSocketAddress
 import java.net.Socket
 
 private const val CONNECTION_TIME_OUT = 3000
+
 private val logger = KotlinLogging.logger {}
 
 abstract class Server(
@@ -19,7 +20,7 @@ abstract class Server(
 
     open lateinit var hash: BigInteger
 
-    open fun health(): Boolean = defaultHealthCheck() // todo: 'is' convention
+    open fun health(): Boolean = defaultHealthCheck()
 
     private fun defaultHealthCheck(): Boolean {
         Socket().use { socket ->
@@ -36,5 +37,4 @@ abstract class Server(
     abstract fun reDistribute(from: Server, by: HashFunction<String>)
 
     abstract fun moveEverything(to: Server)
-    //todo how the type can be restricted by the generic??
 }

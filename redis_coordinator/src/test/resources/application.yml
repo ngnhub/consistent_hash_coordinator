@@ -1,6 +1,0 @@
-spring:
-  application:
-    name: redis_coordinator
-jedis-server-storage:
-  host: localhost
-  port: 6000

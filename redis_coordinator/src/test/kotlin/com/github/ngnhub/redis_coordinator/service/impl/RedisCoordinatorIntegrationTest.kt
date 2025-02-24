@@ -10,7 +10,6 @@ import org.springframework.test.web.servlet.get
 import org.springframework.test.web.servlet.post
 import org.testcontainers.containers.GenericContainer
 
-
 @AutoConfigureMockMvc
 class RedisCoordinatorIntegrationTest : RedisTestContainersBaseClass() {
 
@@ -39,7 +38,7 @@ class RedisCoordinatorIntegrationTest : RedisTestContainersBaseClass() {
     }
 
     @Test
-    fun `should redistribute values when server is removed`() {
+    fun `should redistribute values when server are removing`() {
         serverAdded(REDIS_1)
         serverAdded(REDIS_2)
         serverAdded(REDIS_3)

@@ -24,19 +24,23 @@ class DefaultCoordinator<S : Server>(
     override fun plus(server: S) {
         try {
             lock.lock()
-            val newNodeHash = hashFunction.hash(server.key)
-            server.hash = newNodeHash
-            consistentHashRing[newNodeHash] = server
-            nextAvailableServer(newNodeHash + BigInteger.ONE)?.let {
-                if (server.key != it.key) {
-                    server.reDistribute(it, hashFunction)
-                }
-            }
+            addServerWithRedistributing(server)
         } catch (e: Exception) {
             this - server.key
             throw e
         } finally {
             lock.unlock()
+        }
+    }
+
+    private fun addServerWithRedistributing(server: S) {
+        val newNodeHash = hashFunction.hash(server.key)
+        server.hash = newNodeHash
+        consistentHashRing[newNodeHash] = server
+        nextAvailableServer(newNodeHash + BigInteger.ONE)?.let {
+            if (server.key != it.key) {
+                server.reDistribute(it, hashFunction)
+            }
         }
     }
 
@@ -67,7 +71,7 @@ class DefaultCoordinator<S : Server>(
                     it.moveEverything(next)
                 }
             } else {
-                logger.info { "Removing server is not alive can not move data from it " }
+                logger.info { "Removing server is not alive - can not move data from there" }
             }
         }
         return consistentHashRing - hash

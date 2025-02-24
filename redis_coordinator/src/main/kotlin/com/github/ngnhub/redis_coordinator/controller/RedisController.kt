@@ -8,14 +8,12 @@ import org.springframework.web.bind.annotation.*
 class RedisController(val redisOperationsService: RedisOperationsService) {
 
     @GetMapping("/{key}")
-    fun getValue(@PathVariable key: String): Any? {
-        return redisOperationsService[key]
-    }
+    fun getValue(@PathVariable key: String) = redisOperationsService[key]
+
 
     @GetMapping("/{server}/all")
-    fun getAllValues(@PathVariable server: String): Any? {
-        return redisOperationsService.getAll(server)
-    }
+    fun getAllValues(@PathVariable server: String) = redisOperationsService.getAll(server)
+
 
     @PostMapping("/{key}")
     fun addValue(@PathVariable key: String, @RequestBody value: String) {
