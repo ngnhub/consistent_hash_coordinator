@@ -59,12 +59,17 @@ class DefaultCoordinator<S : Server>(
     }
 
     override fun addVirtualNodes(vararg virtualNodes: S, sourceNode: S) {
-//        TODO("Not yet implemented")
+        // TODO("Not yet implemented")
         throw UnsupportedOperationException("Not yet implemented")
     }
 
     override fun minus(key: String): S? {
         val hash = hashFunction.hash(key)
+        moveDataToTheNextAvailableServer(hash)
+        return consistentHashRing - hash
+    }
+
+    private fun moveDataToTheNextAvailableServer(hash: BigInteger) {
         consistentHashRing[hash]?.let {
             if (it.health()) {
                 nextAvailableServer(hash + BigInteger.ONE)?.let { next ->
@@ -74,6 +79,5 @@ class DefaultCoordinator<S : Server>(
                 logger.info { "Removing server is not alive - can not move data from there" }
             }
         }
-        return consistentHashRing - hash
     }
 }
